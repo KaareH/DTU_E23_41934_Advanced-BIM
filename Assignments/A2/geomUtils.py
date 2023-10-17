@@ -61,3 +61,7 @@ def convert_bnd_to_line(the_box):
 
     ais_line = AIS_Line(pt1, pt2)
     return ais_line
+
+"""Converts a bounding box to a plane based on the shortest side"""
+def convert_bnd_to_plane(the_box):
+    return None
