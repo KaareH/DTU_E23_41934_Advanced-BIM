@@ -64,4 +64,5 @@ def convert_bnd_to_line(the_box):
 
 """Converts a bounding box to a plane based on the shortest side"""
 def convert_bnd_to_plane(the_box):
+    # from OCC.Core.HLRBRep import HLRAlgo_Projector
     return None
