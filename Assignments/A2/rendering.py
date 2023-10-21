@@ -12,7 +12,6 @@ from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB
 from OCC.Display.OCCViewer import Viewer3d
 from PIL import Image
 
-
 def quickJupyterRender(elements_render, settings, my_renderer = None):
     if my_renderer is None:
         my_renderer = JupyterRenderer(size=(700, 700))
@@ -35,7 +34,7 @@ def RenderImage(renderFunc, img_size=(1024, 768), **args):
     offscreen_renderer.Create()
     offscreen_renderer.SetModeShaded()
 
-    offscreen_renderer.View.SetUp(0, 0, -1)
+    # offscreen_renderer.View.SetUp(0, 0, -1)
 
     # Do the rendering
     renderFunc(offscreen_renderer, **args)
@@ -50,6 +49,7 @@ def RenderImage(renderFunc, img_size=(1024, 768), **args):
     # offscreen_renderer.View.Dump(f"./capture_jpeg.jpeg")
 
     img = Image.frombytes('RGB', img_size, img_bytes)
+    img = img.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
 
     return img 
 
