@@ -7,14 +7,18 @@ class Knot3D:
     def __init__(self) -> None:
         pass
 
-class Beam:
+class StructuralMember:
     def __init__(self) -> None:
         pass
 
-class Column:
+class Beam(StructuralMember):
     def __init__(self) -> None:
-        pass
+        super().__init__()
 
-class Slab:
+class Column(StructuralMember):
     def __init__(self) -> None:
-        pass
+        super().__init__()
+
+class Slab(StructuralMember):
+    def __init__(self) -> None:
+        super().__init__()
