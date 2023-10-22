@@ -43,3 +43,13 @@ The IDM diagram that describes the tool implemented in this assignment.
 ![IDM-implemented](diagrams/IDM-implemented.svg)
 
 
+## Using the tool
+
+### Prerequisites for script-execution
+
+In addition to common Python-modules, Open Cascade is required.
+
+Refer to below files for specified environment:
+
+- [`environment.yml`](environment.yml)
+- [`requirements.txt`](requirements.txt)
