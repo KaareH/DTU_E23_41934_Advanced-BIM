@@ -4,6 +4,8 @@ Kaare G. S. Hansen, s214282 - DTU
 
 Rendering functions
 """
+
+from deprecated import deprecated
 import ifcopenshell.util
 
 from OCC.Display.SimpleGui import init_display
@@ -26,7 +28,7 @@ from PIL import Image
 
 def quickJupyterRender(elements_render, settings, my_renderer = None):
     """Interactive renderer in Jupyter notebook"""
-    
+
     if my_renderer is None:
         my_renderer = JupyterRenderer(size=(700, 700))
 
@@ -103,6 +105,7 @@ def SimpleRenderFunc(renderer, **args):
 
     renderer.FitAll()
 
+@deprecated("Use processGeometry and other renderFunc instead")
 def ElementsRenderFunc(renderer, **args):
     """Render a bunch of IFC elements. Only renders body"""
 
