@@ -15,11 +15,6 @@ import ifcopenshell.util.shape
 import ifcopenshell.util.selector
 
 
-model_dir = "/Users/Kaare/My Drive/DTU/Kurser/Videregaaende BIM - 41934/IFC-models"
-
-model_file_ark = "SkyLab/LLYN - ARK.ifc"
-model_file_stru = "SkyLab/LLYN - STRU.ifc"
-
 def load_models(model_dir, models):
     """Load multiple models"""
 
