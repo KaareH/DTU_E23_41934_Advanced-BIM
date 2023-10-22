@@ -7,9 +7,24 @@ __41934 - Advanced BIM, E23__ - _Technical University of Denmark_
 
 
 
-## Use-case
+## Use-cases
 
-Lorem ipsum...
+Generation of an analytical structural model according to provided structural IFC-model of load bearing members.
+In addition, load cases may be generated based on additionally provided IFC-models (Arch, MEP etc...), taking into consideration dead-loads of non-structural elements, zones/spaces, local building codes etc...
+
+The use case/tool is intended for either:
+
+### Rapid structural design and dimensioning
+
+- The abilility for non-structural engineers to quickly analyse and iterate their model-design without the need of a structural engineer.
+- Structural analysis results are only indicative, and cannot be used for final verification.
+- Quickly estimate dimensioning of members, and if structural design is likely a viable solution.
+
+
+### Speed-up for structural engineers
+
+- Rapid generation of a likely valid/correct structural analysis model.
+- Verification and correction workflow. Rather than having the structural engineer model manually by hand, the structural engineer verifies the generated structural analysis model and make corrections if/whenever necessary.
 
 
 ## Disciplinary knowledge
@@ -25,6 +40,17 @@ Lorem ipsum...
 **What is the input data for your use case?**
 
 **What other use cases are waiting for your use case to complete?**
+
+## Future extensions
+A list of possible future extensions of functionality:
+
+- Identification of inappropriately dimensioned structural members
+    - Are deformation requirements met or greatly exceeded?
+    - Same for stresses etc...
+    - List/charts of under-engineered, appropriate and over-engineered members
+- Provide suggestions for rightsized members
+    - Adjustment of beam/column profiles and materials
+    - Calculate rebar layout/sizes
 
 
 ## IDM diagrams
