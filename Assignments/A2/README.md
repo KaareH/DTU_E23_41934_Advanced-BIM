@@ -29,17 +29,30 @@ The use case/tool is intended for either:
 
 ## Disciplinary knowledge
 
+For the final tool, comprehensive knowledge about structural engineering is required.
+For further development, knowledge about correct modelling of analytical FEM-models is also required.
+
+For this implementation basic knowledge of structural engineering has been used.
+
+
 ## Utilized IFC-concepts
 
-**What disciplinary analysis does it require?**
+- Geometric processing
+- Psets to identify load-bearing elements
+- Filtering based on classes
+- IfcRepresentation
 
-**What building elements are you interested in?**
+## Disciplinary analysis
 
-**What (use cases) need to be done before you can start your use case?**
+- Structural FEM-Analysis
+- Cross-section analysis
 
-**What is the input data for your use case?**
+## Elements of interest
 
-**What other use cases are waiting for your use case to complete?**
+For the implented tool, every element derived of `IfcBuildngElement` marked as load-bearing is of interest.
+
+For the further developed tool, all entities derived of `IfcElement` with a physical geometry is of interest to calculate accurate deadl-load. `IfcSpatialElement` is also of interest to determine live-loads.
+
 
 ## Future extensions
 A list of possible future extensions of functionality:
