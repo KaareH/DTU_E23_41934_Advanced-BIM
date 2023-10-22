@@ -106,3 +106,46 @@ def processGeometry(model):
 
     return shapeData, tree, unit_magnitude, unit_name
 
+
+def get_pdct_shape(element, settings):
+    body = ifcopenshell.util.representation.get_representation(element, "Model", "Body")
+    body_repr = ifcopenshell.util.representation.resolve_representation(body)
+    pdct_shape = ifcopenshell.geom.create_shape(settings, inst=element, repr=body_repr)
+
+    return pdct_shape
+
+def get_elementShapes(elements, settings):
+    elements_shape = dict()
+
+    for element in elements:
+        pdct_shape = get_pdct_shape(element, settings)
+        GUID = element.GlobalId
+
+        elements_shape[GUID] = pdct_shape
+
+    return elements_shape
+
+def getCurveShapes(elements):
+    settings = ifcopenshell.geom.settings()
+    settings.set(settings.USE_PYTHON_OPENCASCADE, True)  # tells ifcopenshell to use pythonocc
+
+    #################
+    # Extra options #
+    #################
+
+    # settings.set(settings.USE_BREP_DATA,True)
+    # settings.set(settings.SEW_SHELLS,True)
+    settings.set(settings.USE_WORLD_COORDS,True)
+    settings.set(settings.INCLUDE_CURVES, True)
+    # settings.set(settings.EDGE_ARROWS, True)
+
+    curveShapes = list()
+    for element in elements:
+        axis = ifcopenshell.util.representation.get_representation(element, "Model", "Axis")
+        assert axis is not None
+        curve_3d_rep = ifcopenshell.util.representation.resolve_representation(axis)
+        curveShape = ifcopenshell.geom.create_shape(settings, inst=element, repr=curve_3d_rep)
+
+        curveShapes.append(curveShape)
+    
+    return curveShapes

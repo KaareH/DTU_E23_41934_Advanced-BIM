@@ -5,11 +5,23 @@ Kaare G. S. Hansen, s214282 - DTU
 Rendering functions
 """
 import ifcopenshell.util
+
 from OCC.Display.SimpleGui import init_display
 from OCC.Display.WebGl.jupyter_renderer import JupyterRenderer, format_color
 from OCC.Core.Graphic3d import Graphic3d_BufferType
 from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB
 from OCC.Display.OCCViewer import Viewer3d
+from OCC.Core.Bnd import Bnd_Box
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
+from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Dir, gp_XYZ
+from OCC.Core.gp import gp_Pnt, gp_Dir
+from OCC.Core.Geom import Geom_CartesianPoint
+from OCC.Core.AIS import AIS_Line
+from OCC.Core.Bnd import Bnd_OBB
+from OCC.Core.BRepBndLib import brepbndlib
+import OCC.Core.BRepPrimAPI
+import OCC.Core.BRepTools
+
 from PIL import Image
 
 def quickJupyterRender(elements_render, settings, my_renderer = None):
@@ -117,4 +129,17 @@ def ElementsRenderFunc(renderer, **args):
                 print(f"Error! {e}")
 
     renderer.FitAll()
+
+def FitToShape(occ_display, shape, enlarge=0.02):
+    bbox = Bnd_Box()
+    brepbndlib.Add(shape, bbox)
+    
+    bbox.Enlarge(enlarge)
+
+    diag = bbox.SquareExtent() ** 0.5
+    occ_display.View.FitAll(bbox, diag)
+
+    bboxShp = BRepPrimAPI_MakeBox(bbox.CornerMin(), bbox.CornerMax()).Shape()
+
+    return bbox, bboxShp
 
