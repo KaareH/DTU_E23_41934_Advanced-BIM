@@ -66,6 +66,8 @@ The IDM diagram for the final intended (but unimplemented) tool:
 
 The IDM diagram that describes the tool implemented in this assignment.
 
+Colored in red is implemented parts:
+
 ![IDM-implemented](diagrams/IDM-implemented.svg)
 
 
