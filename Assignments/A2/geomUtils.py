@@ -65,6 +65,7 @@ def convert_bnd_to_line(the_box):
     pt2 = Geom_CartesianPoint(pnt2)
 
     ais_line = AIS_Line(pt1, pt2)
+
     return ais_line
 
 """Converts a bounding box to a plane based on the shortest side"""
@@ -72,15 +73,17 @@ def convert_bnd_to_plane(the_box):
     # from OCC.Core.HLRBRep import HLRAlgo_Projector
     return None
 
-def find_collisions(elements_obb):
+"""Retreive a list of OBBs that collide with each other"""
+def find_collisions(elements_obb, enlargement=0.001):
     common_collisions = set()
     element_collisions = dict()
+
     for key, obb in elements_obb.items():
         collides_with = list()
         collisions = list()
         obb_enlarged = Bnd_OBB()
         obb_enlarged.Add(obb)
-        obb_enlarged.Enlarge(0.001)
+        obb_enlarged.Enlarge(enlargement)
 
         for key2, obb2 in elements_obb.items():
             # collides = not obb.IsOut(obb2)
@@ -101,6 +104,7 @@ def find_collisions(elements_obb):
 
     return common_collisions, element_collisions
 
+"""Get a bunch of OBBs from IFC elements"""
 def get_elementsOBB(elements_shape):
     elements_obb = dict()
 
@@ -115,13 +119,14 @@ def get_elementsOBB(elements_shape):
 
     return elements_obb
 
+"""Return OBB for a shape"""
 def get_OBB(elmShape):
     obb = Bnd_OBB()
     brepbndlib.AddOBB(elmShape, obb, True, True, True)
 
     return obb
 
-
+"""Elongate an OBB in its longest direction"""
 def elongateOBB(OBB, mulF=1.0, addF=0.0):
     obb = Bnd_OBB()
     obb.Add(OBB)

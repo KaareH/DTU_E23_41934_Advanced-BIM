@@ -25,6 +25,8 @@ import OCC.Core.BRepTools
 from PIL import Image
 
 def quickJupyterRender(elements_render, settings, my_renderer = None):
+    """Interactive renderer in Jupyter notebook"""
+    
     if my_renderer is None:
         my_renderer = JupyterRenderer(size=(700, 700))
 
@@ -42,6 +44,8 @@ def quickJupyterRender(elements_render, settings, my_renderer = None):
     return my_renderer
 
 def RenderImage(renderFunc, img_size=(1024, 768), **args):
+    """Render static image for display in notebok"""
+
     offscreen_renderer = Viewer3d()
     offscreen_renderer.Create()
     offscreen_renderer.SetModeShaded()
@@ -65,8 +69,9 @@ def RenderImage(renderFunc, img_size=(1024, 768), **args):
 
     return img 
 
-
 def RenderInWindow(renderFunc, window_size=(1500, 1000), **args):
+    """Interactive renderer in stand alone window"""
+
     occ_display, start_display, add_menu, add_function_to_menu = init_display(size=window_size)
 
     try:
@@ -80,6 +85,8 @@ def RenderInWindow(renderFunc, window_size=(1500, 1000), **args):
         start_display()
 
 def SimpleRenderFunc(renderer, **args):
+    """Render a bunch of shapes"""
+
     shapes = args['shapes']
 
     for i, shape in enumerate(shapes):
@@ -97,6 +104,8 @@ def SimpleRenderFunc(renderer, **args):
     renderer.FitAll()
 
 def ElementsRenderFunc(renderer, **args):
+    """Render a bunch of IFC elements. Only renders body"""
+
     elements = args['elements']
 
     if args.get('settings'):
@@ -131,6 +140,8 @@ def ElementsRenderFunc(renderer, **args):
     renderer.FitAll()
 
 def FitToShape(occ_display, shape, enlarge=0.02):
+    """Fit and zoom renderer camera to a specific object in the scene"""
+
     bbox = Bnd_Box()
     brepbndlib.Add(shape, bbox)
     

@@ -6,6 +6,7 @@ Kaare G. S. Hansen, s214282 - DTU
 import os
 import sys
 import multiprocessing
+from deprecated import deprecated
 
 import ifcopenshell
 import ifcopenshell.util.placement
@@ -13,12 +14,15 @@ import ifcopenshell.geom
 import ifcopenshell.util.shape
 import ifcopenshell.util.selector
 
+
 model_dir = "/Users/Kaare/My Drive/DTU/Kurser/Videregaaende BIM - 41934/IFC-models"
 
 model_file_ark = "SkyLab/LLYN - ARK.ifc"
 model_file_stru = "SkyLab/LLYN - STRU.ifc"
 
 def load_models():
+    """Load multiple models"""
+
     model_paths = dict()
     model_paths['ark'] = os.path.join(model_dir, model_file_ark)
     model_paths['stru'] = os.path.join(model_dir, model_file_stru)
@@ -33,6 +37,8 @@ def load_models():
     return models
 
 def getLoadBearing(model):
+    """Get all load bearing elements in model"""
+
     load_bearing = list(ifcopenshell.util.selector.filter_elements(model,
     "IfcBuildingElement, /Pset_.*Common/.LoadBearing=TRUE"))
 
@@ -44,6 +50,8 @@ def getLoadBearing(model):
     return load_bearing
 
 def processGeometry(model):
+    """Process all geometry in model"""
+
     settings = ifcopenshell.geom.settings()
     settings.set(settings.USE_PYTHON_OPENCASCADE, True)  # tells ifcopenshell to use pythonocc
 
@@ -107,7 +115,10 @@ def processGeometry(model):
     return shapeData, tree, unit_magnitude, unit_name
 
 
+@deprecated("Use processGeometry instead")
 def get_pdct_shape(element, settings):
+    """Get the body shape for a single IFC element"""
+
     body = ifcopenshell.util.representation.get_representation(element, "Model", "Body")
     body_repr = ifcopenshell.util.representation.resolve_representation(body)
     pdct_shape = ifcopenshell.geom.create_shape(settings, inst=element, repr=body_repr)
@@ -115,6 +126,8 @@ def get_pdct_shape(element, settings):
     return pdct_shape
 
 def get_elementShapes(elements, settings):
+    """Get element shapes (body) for elements"""
+
     elements_shape = dict()
 
     for element in elements:
@@ -125,7 +138,10 @@ def get_elementShapes(elements, settings):
 
     return elements_shape
 
+@deprecated("Use processGeometry instead")
 def getCurveShapes(elements):
+    """Get the axis representation for elements"""
+    
     settings = ifcopenshell.geom.settings()
     settings.set(settings.USE_PYTHON_OPENCASCADE, True)  # tells ifcopenshell to use pythonocc
 
