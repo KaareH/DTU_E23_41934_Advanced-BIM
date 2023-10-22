@@ -20,12 +20,12 @@ model_dir = "/Users/Kaare/My Drive/DTU/Kurser/Videregaaende BIM - 41934/IFC-mode
 model_file_ark = "SkyLab/LLYN - ARK.ifc"
 model_file_stru = "SkyLab/LLYN - STRU.ifc"
 
-def load_models():
+def load_models(model_dir, models):
     """Load multiple models"""
 
     model_paths = dict()
-    model_paths['ark'] = os.path.join(model_dir, model_file_ark)
-    model_paths['stru'] = os.path.join(model_dir, model_file_stru)
+    for key, fileName in models.items():
+        model_paths[key] = os.path.join(model_dir, fileName)
 
     models = dict()
     for key, model_path in model_paths.items():
@@ -141,7 +141,7 @@ def get_elementShapes(elements, settings):
 @deprecated("Use processGeometry instead")
 def getCurveShapes(elements):
     """Get the axis representation for elements"""
-    
+
     settings = ifcopenshell.geom.settings()
     settings.set(settings.USE_PYTHON_OPENCASCADE, True)  # tells ifcopenshell to use pythonocc
 
