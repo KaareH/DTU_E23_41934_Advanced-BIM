@@ -5,6 +5,7 @@ Kaare G. S. Hansen, s214282 - DTU
 
 import os
 import sys
+import multiprocessing
 
 import ifcopenshell
 import ifcopenshell.util.placement
@@ -41,3 +42,67 @@ def getLoadBearing(model):
     print(f"Unique types of loadbearing elements:\n {unique_types}")
 
     return load_bearing
+
+def processGeometry(model):
+    settings = ifcopenshell.geom.settings()
+    settings.set(settings.USE_PYTHON_OPENCASCADE, True)  # tells ifcopenshell to use pythonocc
+
+    #################
+    # Extra options #
+    #################
+
+    settings.set(settings.USE_BREP_DATA,True)
+    settings.set(settings.SEW_SHELLS,True)
+    # settings.set(settings.USE_WORLD_COORDS,True)
+    settings.set(settings.INCLUDE_CURVES, True)
+    settings.set(settings.EDGE_ARROWS, True)
+    settings.set(settings.APPLY_LAYERSETS, True)
+    settings.set(settings.VALIDATE_QUANTITIES, True)
+    settings.set(settings.APPLY_DEFAULT_MATERIALS, True)
+
+    CORE_COUNT = multiprocessing.cpu_count()
+    tree = ifcopenshell.geom.tree()
+    iterator = ifcopenshell.geom.iterator(settings, model, CORE_COUNT)
+
+    print(f"Beginning processing with {CORE_COUNT} threads...")
+    contexts = set()
+    shapeData = dict()
+
+    totalCount = 0
+    i = 0
+    if iterator.initialize():
+        while True:
+            totalCount += 1
+            if i % 500 == 0:
+                i = 0
+                print(f"Progress: {i} {iterator.progress()}%")
+            i += 1
+            
+            tree.add_element(iterator.get_native())
+            # shape = iterator.get_native()
+            shape = iterator.get()
+            GUID = shape.data.guid
+            CONTEXT = shape.data.context
+            # GUID = shape.guid
+            # CONTEXT = shape.context
+
+            contexts.add(CONTEXT)
+
+            if not shapeData.get(GUID):
+                shapeData[GUID] = dict()
+            
+            assert(not shapeData.get(GUID).get(CONTEXT))
+
+            shapeData[GUID][CONTEXT] = shape
+
+            if not iterator.next():
+                print(f"Processed {totalCount} items")
+                break
+
+    print(f"Contexts: {contexts}")
+
+    unit_magnitude = iterator.unit_magnitude()
+    unit_name = iterator.unit_name()
+
+    return shapeData, tree, unit_magnitude, unit_name
+
