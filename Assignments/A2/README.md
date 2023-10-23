@@ -5,7 +5,7 @@ __41934 - Advanced BIM, E23__ - _Technical University of Denmark_
 **Group 48:**
 - Kaare G. S. Hansen, s214282 - DTU
 
-
+**NB.** _Changes_ has been made to this reporsitory post assignment due date. Refer to `commit-b631326` for last commit before due date.
 
 ## Use-cases
 
