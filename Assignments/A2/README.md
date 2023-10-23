@@ -72,6 +72,9 @@ A list of possible future extensions of functionality:
 
 The IDM diagram for the final intended (but unimplemented) tool:
 
+<!--
+https://demo.bpmn.io/new
+-->
 ![IDM-abstract](diagrams/IDM-abstract.svg)
 
 
