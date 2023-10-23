@@ -1,5 +1,6 @@
 # DTU_E23_41934_Advanced-BIM
 
-E23
+__41934 - Advanced BIM, E23__ - _Technical University of Denmark_
 
-Kaare G. S. Hansen, s214282 - DTU
+**Group 48:**
+- Kaare G. S. Hansen, s214282 - DTU
