@@ -14,6 +14,23 @@ import ifcopenshell.geom
 import ifcopenshell.util.shape
 import ifcopenshell.util.selector
 
+import geomUtils
+
+class ModelData:
+    def __init__(self, model) -> None:
+        self.model = model
+
+        shapeData, tree, unit_magnitude, unit_name = processGeometry(model)
+
+        self.shapes = shapeData
+        self.tree = tree
+        self.unit_magnitude = unit_magnitude
+        self.unit_name = unit_name
+
+        elements_shape = {GUID: shapeData[GUID]['Body'] for GUID in shapeData.keys()}
+
+        self.obbs = geomUtils.get_elementsOBB(elements_shape)
+
 
 def load_models(model_dir, models):
     """Load multiple models"""
