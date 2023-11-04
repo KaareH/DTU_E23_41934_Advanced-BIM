@@ -95,7 +95,7 @@ def processGeometry(model):
             totalCount += 1
             if i % 500 == 0:
                 i = 0
-                print(f"Progress: {i} {iterator.progress()}%")
+                print(f"Progress: {iterator.progress()}%")
             i += 1
             
             tree.add_element(iterator.get_native())
