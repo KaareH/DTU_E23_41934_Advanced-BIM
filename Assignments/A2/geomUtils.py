@@ -3,6 +3,8 @@ Kaare G. S. Hansen, s214282 - DTU
 41934 - Advanced BIM, E23
 """
 
+import numpy as np
+
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Dir, gp_XYZ
 from OCC.Core.gp import gp_Pnt, gp_Dir
@@ -12,12 +14,23 @@ from OCC.Core.Bnd import Bnd_OBB
 from OCC.Core.BRepBndLib import brepbndlib
 import OCC.Core.BRepPrimAPI
 import OCC.Core.BRepTools
+from OCC.Core.gp import gp_Vec, gp_Dir
+from OCC.Core.TopoDS import TopoDS_Vertex
+from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.BRepTools import BRepTools_WireExplorer
+from OCC.Core.GeomAbs import GeomAbs_CurveType
+from OCC.Core.TopExp import topexp_FirstVertex
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeEdge
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire, BRepBuilderAPI_MakeEdge
+from OCC.Core.GeomAPI import GeomAPI_Interpolate
+from OCC.Core.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt
+from OCC.Core.gp import gp_Pnt
+from OCC.Core.TopoDS import TopoDS_Iterator, TopoDS_ListOfShape, TopoDS_TWire
 
 
-import numpy as np
-
-"""Converts a bounding box to a box shape."""
 def convert_bnd_to_shape(the_box):
+    """Converts a bounding box to a box shape."""
     barycenter = the_box.Center()
     x_dir = the_box.XDirection()
     y_dir = the_box.YDirection()
@@ -37,8 +50,8 @@ def convert_bnd_to_shape(the_box):
     box = BRepPrimAPI_MakeBox(axes, 2.0 * half_x, 2.0 * half_y, 2.0 * half_z).Shape()
     return box
 
-"""Converts a bounding box to a line on the longest axis"""
 def convert_bnd_to_line(the_box):
+    """Converts a bounding box to a line on the longest axis"""
     barycenter = the_box.Center()
     x_dir = the_box.XDirection()
     y_dir = the_box.YDirection()
@@ -68,13 +81,13 @@ def convert_bnd_to_line(the_box):
 
     return ais_line
 
-"""Converts a bounding box to a plane based on the shortest side"""
 def convert_bnd_to_plane(the_box):
+    """Converts a bounding box to a plane based on the shortest side"""
     # from OCC.Core.HLRBRep import HLRAlgo_Projector
     return None
 
-"""Retreive a list of OBBs that collide with each other"""
 def find_collisions(elements_obb, enlargement=0.001):
+    """Retreive a list of OBBs that collide with each other"""
     common_collisions = set()
     element_collisions = dict()
 
@@ -104,8 +117,8 @@ def find_collisions(elements_obb, enlargement=0.001):
 
     return common_collisions, element_collisions
 
-"""Get a bunch of OBBs from IFC elements"""
 def get_elementsOBB(elements_shape):
+    """Get a bunch of OBBs from IFC elements"""
     elements_obb = dict()
 
     for GUID, pdct_shape in elements_shape.items():
@@ -119,15 +132,15 @@ def get_elementsOBB(elements_shape):
 
     return elements_obb
 
-"""Return OBB for a shape"""
 def get_OBB(elmShape):
+    """Return OBB for a shape"""
     obb = Bnd_OBB()
     brepbndlib.AddOBB(elmShape, obb, True, True, True)
 
     return obb
 
-"""Elongate an OBB in its longest direction"""
 def elongateOBB(OBB, mulF=1.0, addF=0.0):
+    """Elongate an OBB in its longest direction"""
     obb = Bnd_OBB()
     obb.Add(OBB)
 
@@ -146,4 +159,78 @@ def elongateOBB(OBB, mulF=1.0, addF=0.0):
         obb.SetZComponent(gp_Dir(obb.ZDirection()), obb.ZHSize()*mulF + addF)
 
     return obb
+
+def is_wire_straight_line(wire):
+    """Check if a TopoDS_Wire is a straight line"""
+    iter_edge = BRepTools_WireExplorer(wire)
+    first_edge = iter_edge.Current()
+    first_curve = BRepAdaptor_Curve(first_edge)
+    first_vec = gp_Vec(first_curve.Value(first_curve.FirstParameter()),
+                       first_curve.Value(first_curve.LastParameter()))
+
+    while iter_edge.More():
+        edge = iter_edge.Current()
+        curve = BRepAdaptor_Curve(edge)
+        
+        curveType = GeomAbs_CurveType(curve.GetType())
+        
+        if not curveType == GeomAbs_CurveType.GeomAbs_Line:
+            return False
+
+        start_vertex = topexp_FirstVertex(edge)
+        start_point = BRep_Tool.Pnt(start_vertex)
+        end_point = curve.Value(curve.LastParameter())
+        vec = gp_Vec(start_point, end_point)
+        
+        # angularTolearance = gp_Dir().AngularTolerance()
+        angularTolearance = 0.01
+        print(vec.Angle(first_vec))
+        if vec.Angle(first_vec) > angularTolearance:
+            return False
+        iter_edge.Next()
+    return True
+
+def make_wire_from_points(points):
+    """Make a TopoDS_Wire from a list of points"""
+    wire_builder = BRepBuilderAPI_MakeWire()
+    for i in range(len(points)-1):
+        edge_builder = BRepBuilderAPI_MakeEdge(points[i], points[i+1])
+        wire_builder.Add(edge_builder.Edge())
+    return wire_builder.Wire()
+
+def make_wire_from_bspline(bspline_curve):
+    """Make a TopoDS_Wire from a bspline curve"""
+    edge_builder = BRepBuilderAPI_MakeEdge(bspline_curve)
+    wire_builder = BRepBuilderAPI_MakeWire()
+    wire_builder.Add(edge_builder.Edge())
+    return wire_builder.Wire()
+
+def make_bspline_from_points(points):
+    """Make a bspline curve from a list of gp_Pnt"""
+    array_of_points = TColgp_HArray1OfPnt(1, len(points))
+    for i, point in enumerate(points):
+        array_of_points.SetValue(i+1, point)
+
+    interpolator = GeomAPI_Interpolate(array_of_points, False, 1.0e-2)
+
+    interpolator.Perform()
+
+    if interpolator.IsDone():
+        curve = interpolator.Curve()
+        return curve
+    
+    raise Exception("Could not interpolate points")
+
+def get_subShapes(shape):
+    """Get all subshapes of a TopoDS_Compund"""
+    subShapes = list()
+
+    ds_iter = TopoDS_Iterator(shape)
+    while ds_iter.More():
+        subShape = ds_iter.Value()
+        subShapes.append(subShape)
+        
+        ds_iter.Next()
+    
+    return subShapes
 
