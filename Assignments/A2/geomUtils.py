@@ -27,6 +27,7 @@ from OCC.Core.GeomAPI import GeomAPI_Interpolate
 from OCC.Core.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt
 from OCC.Core.gp import gp_Pnt
 from OCC.Core.TopoDS import TopoDS_Iterator, TopoDS_ListOfShape, TopoDS_TWire
+from OCC.Core.TopExp import topexp_Vertices
 
 
 def convert_bnd_to_shape(the_box):
@@ -50,7 +51,7 @@ def convert_bnd_to_shape(the_box):
     box = BRepPrimAPI_MakeBox(axes, 2.0 * half_x, 2.0 * half_y, 2.0 * half_z).Shape()
     return box
 
-def convert_bnd_to_line(the_box):
+def convert_bnd_to_line(the_box, returnWire=False):
     """Converts a bounding box to a line on the longest axis"""
     barycenter = the_box.Center()
     x_dir = the_box.XDirection()
@@ -74,6 +75,10 @@ def convert_bnd_to_line(the_box):
     pnt1 = gp_Pnt(point.XYZ() - vecs[maxIndex] * half_sizes[maxIndex])
     pnt2 = gp_Pnt(point.XYZ() + vecs[maxIndex] * half_sizes[maxIndex])
 
+    if returnWire:
+        wire = make_wire_from_points([pnt1, pnt2])
+        return wire
+    
     pt1 = Geom_CartesianPoint(pnt1)
     pt2 = Geom_CartesianPoint(pnt2)
 
@@ -160,7 +165,7 @@ def elongateOBB(OBB, mulF=1.0, addF=0.0):
 
     return obb
 
-def is_wire_straight_line(wire):
+def is_wire_straight_line(wire, angularTolearance=0.01):
     """Check if a TopoDS_Wire is a straight line"""
     iter_edge = BRepTools_WireExplorer(wire)
     first_edge = iter_edge.Current()
@@ -183,8 +188,7 @@ def is_wire_straight_line(wire):
         vec = gp_Vec(start_point, end_point)
         
         # angularTolearance = gp_Dir().AngularTolerance()
-        angularTolearance = 0.01
-        print(vec.Angle(first_vec))
+        # print(vec.Angle(first_vec))
         if vec.Angle(first_vec) > angularTolearance:
             return False
         iter_edge.Next()
@@ -211,7 +215,7 @@ def make_bspline_from_points(points):
     for i, point in enumerate(points):
         array_of_points.SetValue(i+1, point)
 
-    interpolator = GeomAPI_Interpolate(array_of_points, False, 1.0e-2)
+    interpolator = GeomAPI_Interpolate(array_of_points, False, 1.0e-6)
 
     interpolator.Perform()
 
@@ -234,3 +238,13 @@ def get_subShapes(shape):
     
     return subShapes
 
+def get_wire_endpoints(wire):
+    """Get endpoints of a wire"""
+    v1 = TopoDS_Vertex()
+    v2 = TopoDS_Vertex()
+    topexp_Vertices(wire, v1, v2)
+
+    p1 = BRep_Tool().Pnt(TopoDS_Vertex(v1))
+    p2 = BRep_Tool().Pnt(TopoDS_Vertex(v2))
+
+    return p1, p2
