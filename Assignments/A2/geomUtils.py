@@ -28,6 +28,7 @@ from OCC.Core.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt
 from OCC.Core.gp import gp_Pnt
 from OCC.Core.TopoDS import TopoDS_Iterator, TopoDS_ListOfShape, TopoDS_TWire
 from OCC.Core.TopExp import topexp_Vertices
+from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 
 
 def convert_bnd_to_shape(the_box):
@@ -248,3 +249,13 @@ def get_wire_endpoints(wire):
     p2 = BRep_Tool().Pnt(TopoDS_Vertex(v2))
 
     return p1, p2
+
+def find_closest_points(wire1, wire2):
+    """Return the closest points on two wires"""
+    dist_shape_shape = BRepExtrema_DistShapeShape(wire1, wire2)
+    dist_shape_shape.Perform()
+    return dist_shape_shape.PointOnShape1(1), dist_shape_shape.PointOnShape2(1)
+
+def distance_between_points(p1: gp_Pnt, p2: gp_Pnt) -> float:
+    """Calculate distance between two points"""
+    return p1.Distance(p2)
