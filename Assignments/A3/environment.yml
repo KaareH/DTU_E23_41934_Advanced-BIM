@@ -13,3 +13,4 @@ dependencies:
   - lark
   - pyqt
   - pyside2
+  - scipy
