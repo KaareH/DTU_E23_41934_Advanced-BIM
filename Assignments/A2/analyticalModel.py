@@ -13,42 +13,52 @@ class StructuralMember:
     def __init__(self, GUID) -> None:
         self.GUID = GUID
 
-class VirtualMember:
+class PhysicalMember(StructuralMember):
+    def __init__(self, GUID) -> None:
+        super().__init__(GUID)
+
+class VirtualMember(StructuralMember):
     def __init__(self, key, axis, member1, member2) -> None:
+        super().__init__(key)
         self.key = key
         self.axis = axis
         self.member1 = member1
         self.member2 = member2
 
-
-class Beam(StructuralMember):
+class AxialMember(PhysicalMember):
     def __init__(self, GUID, axis) -> None:
         super().__init__(GUID)
-
         assert geomUtils.is_wire_straight_line(axis)
         self.axis = axis
 
-class Column(StructuralMember):
+class PlanarMember(PhysicalMember):
+    def __init__(self, GUID, surface) -> None:
+        super().__init__(GUID)
+        # Do assert here
+        self.surface = surface
+
+class Beam(AxialMember):
     def __init__(self, GUID, axis) -> None:
-        super().__init__(GUID)
+        super().__init__(GUID, axis)
 
-        assert geomUtils.is_wire_straight_line(axis)
-        self.axis = axis
+class Column(AxialMember):
+    def __init__(self, GUID, axis) -> None:
+        super().__init__(GUID, axis)
 
-class Slab(StructuralMember):
-    def __init__(self, GUID) -> None:
-        super().__init__(GUID)
+class Slab(PlanarMember):
+    def __init__(self, GUID, surface) -> None:
+        super().__init__(GUID, surface)
 
-class Wall(StructuralMember):
-    def __init__(self, GUID) -> None:
-        super().__init__(GUID)
+class Wall(PlanarMember):
+    def __init__(self, GUID, surface) -> None:
+        super().__init__(GUID, surface)
 
 class AnalyticalModel:
     def __init__(self) -> None:
         self.members = dict()
 
     def addMember(self, member) -> None:
-        if isinstance(member, StructuralMember):
+        if isinstance(member, PhysicalMember):
             assert self.members.get(member.GUID) is None
             self.members[member.GUID] = member
         elif isinstance(member, VirtualMember):
