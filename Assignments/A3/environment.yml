@@ -3,14 +3,22 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python
-  - pythonocc-core=7.7.0
+  - pip
+  # - python=3.11.5
+  - python=3.11
+  - ifcopenshell=v0.7.0a10
+  # - pythonocc-core=7.7.0
+  - pythonocc-core=7
   - plotly
-  - ifcopenshell
   - ipykernel
   - pandas
   - pythreejs
   - lark
   - pyqt
+  - pyqt5-sip
   - pyside2
   - scipy
+  - deprecated
+  - pillow
+  - pip:
+    - PyniteFEA

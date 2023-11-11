@@ -2,36 +2,79 @@ name: Python Package using Conda
 
 on: [push]
 
+env:
+  CACHE_NUMBER: 0  # increase to reset cache manually
+
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./Assignments/A3
+  build:
     strategy:
       max-parallel: 5
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+            prefix: $CONDA/bin
+            
+          - os: windows-latest
+            label: win-64
+            prefix: $CONDA/Scripts
 
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+        working-directory: ./Assignments/A3
+    
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python 3.11
       uses: actions/setup-python@v3
       with:
         python-version: '3.11'
+        
     - name: Add conda to system path
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies
+        echo "Conda directory: $CONDA"
+        echo ${{ matrix.prefix }} >> $GITHUB_PATH
+
+    - name: Init conda
+      run: conda init bash
+
+    - name: Set cache date and path
       run: |
-        conda env update --file environment.yml --name base
+        echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
+    - uses: actions/cache@v3
+      with:
+        path: ${{ env.CONDA_ENV }}
+        key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+      id: cache
+
+    - name: Set up conda environment
+      run: |
+        # Install dependencies
+        conda env update -n BIMEnv -f environment.yml
+        echo "CONDA_PREFIX: $CONDA_PREFIX"
+      if: steps.cache.outputs.cache-hit != 'true'
+        
     - name: Lint with flake8
       run: |
+        source activate BIMEnv
+        conda activate BIMEnv
+        echo "CONDA_PREFIX: $CONDA_PREFIX"
+
         conda install flake8
         # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --exclude ./env --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 . --exclude ./env --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
     - name: Test with pytest
       run: |
+        source activate BIMEnv
+        conda activate BIMEnv
+
         conda install pytest
-        pytest
+        pytest --ignore=./env
