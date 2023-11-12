@@ -59,6 +59,7 @@ jobs:
         echo "CONDA_PREFIX: $CONDA_PREFIX"
       if: steps.cache.outputs.cache-hit != 'true'
     - uses: actions/cache/save@v3
+      id: cache
       with:
         path: ${{ env.CONDA_ENV }}
         key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
