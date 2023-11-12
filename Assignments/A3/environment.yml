@@ -4,6 +4,8 @@ channels:
   - defaults
 dependencies:
   - pip
+  - conda
+  - conda-build
   # - python=3.11.5
   - python=3.11
   - ifcopenshell=v0.7.0a10
