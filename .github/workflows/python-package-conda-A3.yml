@@ -53,6 +53,7 @@ jobs:
     #   id: cache
     - name: Set cache date and path
       run: |
+        echo $(ls)
         echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
         echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
     - uses: actions/cache/restore@v3
@@ -79,7 +80,7 @@ jobs:
         conda activate BIMEnv
         
         conda build .
-        conda install --use-local pyconbim --force-reinstall
+        # conda install --use-local pyconbim --force-reinstall
         
     - name: Lint with flake8
       run: |
