@@ -57,7 +57,7 @@ jobs:
         echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
         echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
         echo "Hash:"
-        echo $(hashFiles('environment.yml'))
+        echo $(hashFiles(environment.yml))
     - uses: actions/cache/restore@v3
       with:
         path: ${{ env.CONDA_ENV }}
