@@ -7,7 +7,7 @@ Misc. utils
 
 def sampleUtil():
     """Function for testing"""
-    return "abc1234567"
+    return "abc123456789"
 
 def getElementsRender(guids, model):
     elements_render = list()

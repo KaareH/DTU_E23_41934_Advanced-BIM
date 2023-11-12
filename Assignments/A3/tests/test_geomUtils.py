@@ -5,7 +5,8 @@ Kaare G. S. Hansen, s214282 - DTU
 
 import pytest
 
-from PyConBIM import geomUtils
+# from PyConBIM import geomUtils
+from pyconbim import geomUtils
 # from OCC.Core.gp import gp_Pnt
 
 # def test_distance_between_points():

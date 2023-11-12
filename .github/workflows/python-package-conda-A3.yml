@@ -63,7 +63,8 @@ jobs:
     - uses: actions/cache/restore@v3
       with:
         path: ${{ env.CONDA_ENV }}
-        key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        # key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        key: ${{ matrix.label }}-conda-${{ hashFiles('Assingments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
       id: restore-cache
 
     - name: Set up conda environment
