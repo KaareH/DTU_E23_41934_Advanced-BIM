@@ -53,11 +53,16 @@ jobs:
       id: cache
 
     - name: Set up conda environment
+      # Save cache no matter what
+    - uses: actions/cache/save@v3
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         # Install dependencies
         conda env update -n BIMEnv -f environment.yml
         echo "CONDA_PREFIX: $CONDA_PREFIX"
-      if: steps.cache.outputs.cache-hit != 'true'
+      with:
+        path: ${{ env.CONDA_ENV }}
+        key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
 
     - name: Build package
       run: |
