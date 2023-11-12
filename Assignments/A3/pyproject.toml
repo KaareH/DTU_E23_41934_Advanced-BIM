@@ -1,13 +1,17 @@
 [build-system]
+# requires = ["setuptools", "setuptools-scm"]
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "PyConBIM"
+name = "pyconbim"
 authors = [
     {name = "Kaare G. S. Hansen", email = "kaare@gshansen.dk"},
 ]
+version = "0.0.1"
 
 description = "My package description"
 readme = "README.md"
 requires-python = ">=3.11"
+
+

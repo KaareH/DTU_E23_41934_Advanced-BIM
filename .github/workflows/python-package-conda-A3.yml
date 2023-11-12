@@ -58,6 +58,8 @@ jobs:
         echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
         echo "Hash:"
         echo ${{ hashFiles('environment.yml') }}
+        echo "Hash:"
+        echo ${{ hashFiles('Assignments/A3/environment.yml') }}
     - uses: actions/cache/restore@v3
       with:
         path: ${{ env.CONDA_ENV }}

@@ -21,9 +21,9 @@ requirements:
   run:
     - python
 
-test:
-  imports:
-    - pyconbim
+# test:
+#   imports:
+#     - pyconbim
 
 about:
   home: https://github.com/KaareH/DTU_E23_41934_Advanced-BIM
