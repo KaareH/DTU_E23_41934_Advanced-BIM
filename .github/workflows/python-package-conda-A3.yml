@@ -3,7 +3,7 @@ name: Python Package using Conda
 on: [push]
 
 env:
-  CACHE_NUMBER: 0  # increase to reset cache manually
+  CACHE_NUMBER: 1  # increase to reset cache manually
 
 jobs:
   build:
@@ -15,9 +15,9 @@ jobs:
             label: linux-64
             prefix: $CONDA/bin
             
-          # - os: windows-latest
-          #   label: win-64
-          #   prefix: $CONDA/Scripts
+          - os: windows-latest
+            label: win-64
+            prefix: $CONDA/Scripts
 
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
@@ -74,6 +74,7 @@ jobs:
         echo "CONDA_PREFIX: $CONDA_PREFIX"
       if: steps.restore-cache.outputs.cache-hit != 'true'
     - uses: actions/cache/save@v3
+      if: steps.restore-cache.outputs.cache-hit != 'true'
       id: save-cache
       with:
         path: ${{ env.CONDA_ENV }}
