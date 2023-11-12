@@ -42,27 +42,36 @@ jobs:
     - name: Init conda
       run: conda init bash
 
+    # - name: Set cache date and path
+    #   run: |
+    #     echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+    #     echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
+    # - uses: actions/cache@v3
+    #   with:
+    #     path: ${{ env.CONDA_ENV }}
+    #     key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+    #   id: cache
     - name: Set cache date and path
       run: |
         echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
         echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
-    - uses: actions/cache@v3
+    - uses: actions/cache/restore@v3
       with:
         path: ${{ env.CONDA_ENV }}
         key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-      id: cache
+      id: restore-cache
 
     - name: Set up conda environment
       run: |
         # Install dependencies
         conda env update -n BIMEnv -f environment.yml
         echo "CONDA_PREFIX: $CONDA_PREFIX"
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.restore-cache.outputs.cache-hit != 'true'
     - uses: actions/cache/save@v3
-      id: cache
+      id: save-cache
       with:
         path: ${{ env.CONDA_ENV }}
-        key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        key: ${{ steps.restore-cache.outputs.cache-primary-key }}
 
     - name: Build package
       run: |
