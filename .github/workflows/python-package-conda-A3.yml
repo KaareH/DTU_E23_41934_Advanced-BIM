@@ -93,7 +93,8 @@ jobs:
         conda activate BIMEnv
 
         # conda config --add channels file:///C:/Miniconda/envs/BIMEnv/conda-bld
-        conda config --add channels "file:///${{ env.CONDA_ENV }}/conda-bld"
+        # conda config --add channels "file:///${{ env.CONDA_ENV }}/conda-bld"
+        conda index file:///C:/Miniconda/envs/BIMEnv/conda-bld
 
     - name: Install package
       run: |
