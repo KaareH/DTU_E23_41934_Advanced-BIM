@@ -1,0 +1,28 @@
+{% set name = "pyconbim" %}
+{% set version = "0.1" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  path: ./
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "
+
+requirements:
+  host:
+    - pip
+    - python
+  run:
+    - python
+
+test:
+  imports:
+    - pyconbim
+
+about:
+  home: https://github.com/KaareH/DTU_E23_41934_Advanced-BIM
+  summary: Structural analysis of IFC files

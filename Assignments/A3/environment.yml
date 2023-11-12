@@ -20,5 +20,7 @@ dependencies:
   - scipy
   - deprecated
   - pillow
+  - pytest
+  - flake8
   - pip:
     - PyniteFEA
