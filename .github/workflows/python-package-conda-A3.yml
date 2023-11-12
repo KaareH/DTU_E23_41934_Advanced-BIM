@@ -15,9 +15,9 @@ jobs:
             label: linux-64
             prefix: $CONDA/bin
             
-          - os: windows-latest
-            label: win-64
-            prefix: $CONDA/Scripts
+          # - os: windows-latest
+          #   label: win-64
+          #   prefix: $CONDA/Scripts
 
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
@@ -56,6 +56,8 @@ jobs:
         echo $(ls)
         echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
         echo "CONDA_ENV=$CONDA/envs/BIMEnv" >> $GITHUB_ENV
+        echo "Hash:"
+        echo $(hashFiles('environment.yml'))
     - uses: actions/cache/restore@v3
       with:
         path: ${{ env.CONDA_ENV }}
