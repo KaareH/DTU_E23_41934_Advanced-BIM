@@ -87,12 +87,13 @@ jobs:
         
         conda build .
     
-    - name: Add local channel
+    - name: Add local channel win-64
       run: |
         source activate BIMEnv
         conda activate BIMEnv
         conda config --add channels file:///C:/Miniconda/envs/BIMEnv/conda-bld
       if: matrix.label == 'win-64'
+    - name: Add local channel linux-64
       run: |
         source activate BIMEnv
         conda activate BIMEnv
