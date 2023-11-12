@@ -87,13 +87,21 @@ jobs:
         
         conda build .
     
+    - name: Add local channel
+      run: |
+        source activate BIMEnv
+        conda activate BIMEnv
+
+        conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
+        conda config --add channels file:///C:/Miniconda/envs/BIMEnv/conda-bld
+
     - name: Install package
       run: |
         source activate BIMEnv
         conda activate BIMEnv
 
         # conda config --add channels file:///usr/share/miniconda/envs/BIMEnv/conda-bld
-        conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
+        # conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
         conda install --use-local pyconbim --force-reinstall
         
     - name: Lint with flake8
