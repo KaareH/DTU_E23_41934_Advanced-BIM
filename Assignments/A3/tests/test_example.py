@@ -11,4 +11,4 @@ def test_answer():
     assert True
 
 def test_sampleUtil():
-    assert utils.sampleUtil2() == "abc1234567"
+    assert utils.sampleUtil() == "abc1234567"
