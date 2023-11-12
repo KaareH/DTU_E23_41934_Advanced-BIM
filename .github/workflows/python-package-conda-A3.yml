@@ -11,9 +11,9 @@ jobs:
       max-parallel: 5
       matrix:
         include:
-          - os: ubuntu-latest
-            label: linux-64
-            prefix: $CONDA/bin
+          # - os: ubuntu-latest
+          #   label: linux-64
+          #   prefix: $CONDA/bin
             
           - os: windows-latest
             label: win-64
@@ -92,7 +92,7 @@ jobs:
         source activate BIMEnv
         conda activate BIMEnv
 
-        conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
+        # conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
         conda config --add channels file:///C:/Miniconda/envs/BIMEnv/conda-bld
 
     - name: Install package
