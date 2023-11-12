@@ -85,6 +85,13 @@ jobs:
         conda activate BIMEnv
         
         conda build .
+    
+    - name: Install package
+      run: |
+        source activate BIMEnv
+        conda activate BIMEnv
+
+        conda config --add channels file:///usr/share/miniconda/envs/BIMEnv/conda-bld
         conda install --use-local pyconbim --force-reinstall
         
     - name: Lint with flake8
