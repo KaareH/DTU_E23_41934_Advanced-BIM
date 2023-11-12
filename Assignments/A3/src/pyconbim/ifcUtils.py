@@ -27,9 +27,13 @@ class ModelData:
         self.unit_magnitude = unit_magnitude
         self.unit_name = unit_name
 
-        elements_shape = {GUID: shapeData[GUID]['Body'] for GUID in shapeData.keys()}
+        elements_shape = {GUID: shapeData[GUID] for GUID in shapeData.keys()}
+        elements_bodies = dict()
+        for GUID, shapes in elements_shape.items():
+            if shapes.get('Body'):
+                elements_bodies[GUID] = shapes['Body']
 
-        self.obbs = geomUtils.get_elementsOBB(elements_shape)
+        self.obbs = geomUtils.get_elementsOBB(elements_bodies)
 
 
 def load_models(model_dir, models):
