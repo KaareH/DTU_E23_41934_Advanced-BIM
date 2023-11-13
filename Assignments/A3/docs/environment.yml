@@ -3,5 +3,9 @@ channels:
   - defaults
   - conda-forge
 dependencies:
+  - pip
   - python=3.11
   - sphinx
+  - pip:
+    - sphinx-press-theme
+    - sphinx-book-theme

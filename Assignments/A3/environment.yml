@@ -27,3 +27,5 @@ dependencies:
   - sphinx
   - pip:
     - PyniteFEA
+    - sphinx-press-theme
+    - sphinx-book-theme

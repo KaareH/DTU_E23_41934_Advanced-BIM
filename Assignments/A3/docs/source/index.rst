@@ -10,6 +10,8 @@ Welcome to PyConBIM's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   pyconbim
+
 
 
 Indices and tables
