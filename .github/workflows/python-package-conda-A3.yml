@@ -1,6 +1,9 @@
 name: Python Package using Conda
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - 'Assignments/A3/docs/**'
 
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
