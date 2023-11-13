@@ -106,7 +106,12 @@ Colored in red, are actually implemented parts:
 
 ### Prerequisites for script-execution
 
-In addition to common Python-modules, Open Cascade is required.
+Anaconda is required for dependency management.
+
+
+Update environment from file:
+
+```conda env update --file ./environment.yml --prune```
 
 Refer to below files for specified environment:
 

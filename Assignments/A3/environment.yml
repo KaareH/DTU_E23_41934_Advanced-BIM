@@ -24,5 +24,6 @@ dependencies:
   - pillow
   - pytest
   - flake8
+  - sphinx
   - pip:
     - PyniteFEA
