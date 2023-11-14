@@ -78,6 +78,32 @@ jobs:
           echo "CONDA_PREFIX: $CONDA_PREFIX"
         if: steps.cache.outputs.cache-hit != 'true'
 
+      - name: Get pyconbim package cache
+        run: |
+          - uses: actions/cache/restore@v3
+        with:
+          path: ${{ env.CONDA_ENV }}
+          # key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+          key: ${{ matrix.label }}-conda-pkg-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        id: restore-cache
+
+      - name: Add local channel linux-64
+        run: |
+          source activate BIMEnv
+          conda activate BIMEnv
+          conda config --ad channels file://${{ env.CONDA_ENV }}/conda-bld
+        #if: matrix.label == 'linux-64'
+        
+          # conda config --add channels "file:///${{ env.CONDA_ENV }}/conda-bld"
+          # conda index file:///C:/Miniconda/envs/BIMEnv/conda-bld
+
+      - name: Install package
+        run: |
+          source activate BIMEnv
+          conda activate BIMEnv
+
+          conda install --use-local pyconbim --force-reinstall
+
       # Is there are way to always have the environment activated?
       # - name: Activate environment
       #   run: |
