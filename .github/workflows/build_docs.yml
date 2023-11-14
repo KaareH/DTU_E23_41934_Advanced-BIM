@@ -1,7 +1,7 @@
 name: Build documentation
 
 env:
-  CACHE_NUMBER: 0  # increase to reset cache manually
+  CACHE_NUMBER: 1  # increase to reset cache manually
 
 on:
   # Runs on pushes targeting the default branch
