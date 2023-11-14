@@ -33,7 +33,7 @@ from OCC.Core.TopExp import topexp_Vertices
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.gp import gp_Pln
 from OCC.Core.gp import gp_Ax3
-
+from OCC.Core.TopExp import topexp
 
 def convert_bnd_to_shape(the_box):
     """Converts a bounding box to a box shape."""
@@ -227,7 +227,7 @@ def is_wire_straight_line(wire, angularTolearance=0.01):
         if not curveType == GeomAbs_CurveType.GeomAbs_Line:
             return False
 
-        start_vertex = topexp_FirstVertex(edge)
+        start_vertex = topexp.FirstVertex(edge)
         start_point = BRep_Tool.Pnt(start_vertex)
         end_point = curve.Value(curve.LastParameter())
         vec = gp_Vec(start_point, end_point)
@@ -282,12 +282,12 @@ def get_subShapes(shape):
         ds_iter.Next()
     
     return subShapes
-
+    
 def get_wire_endpoints(wire):
     """Get endpoints of a wire"""
     v1 = TopoDS_Vertex()
     v2 = TopoDS_Vertex()
-    topexp_Vertices(wire, v1, v2)
+    topexp.Vertices(wire, v1, v2)
 
     p1 = BRep_Tool().Pnt(TopoDS_Vertex(v1))
     p2 = BRep_Tool().Pnt(TopoDS_Vertex(v2))
