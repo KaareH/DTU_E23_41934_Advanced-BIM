@@ -69,7 +69,7 @@ jobs:
         with:
           path: ${{ env.CONDA_ENV }}
           # key: ${{ runner.os }}-conda-${{ hashFiles('Assignments/A3/docs/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-          key: ${{ runner.os }}-conda-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+          key: ${{ matrix.label }}-conda-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
         id: cache
           
       - name: Set up conda environment
