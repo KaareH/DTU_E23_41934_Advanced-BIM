@@ -80,7 +80,8 @@ jobs:
 
       - name: Get pyconbim package cache
         run: |
-          echo "CONDA_PKG=${{ env.CONDA_ENV }}/conda-bld" >> $GITHUB_ENV
+          # echo "CONDA_PKG=${{ env.CONDA_ENV }}/conda-bld" >> $GITHUB_ENV
+          echo "CONDA_PKG=$CONDA/envs/BIMEnv/conda-bld" >> $GITHUB_ENV
       - uses: actions/cache/restore@v3
         with:
           path: ${{ env.CONDA_PKG }}
