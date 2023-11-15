@@ -93,7 +93,7 @@ jobs:
         run: |
           source activate docsEnv
           conda activate docsEnv
-          conda config --ad channels file://${{ env.CONDA_ENV }}/conda-bld
+          conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
         #if: matrix.label == 'linux-64'
         
           # conda config --add channels "file:///${{ env.CONDA_ENV }}/conda-bld"

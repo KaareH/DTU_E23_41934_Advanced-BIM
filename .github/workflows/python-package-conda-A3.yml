@@ -100,7 +100,7 @@ jobs:
       run: |
         source activate BIMEnv
         conda activate BIMEnv
-        conda config --ad channels file://${{ env.CONDA_ENV }}/conda-bld
+        conda config --add channels file://${{ env.CONDA_ENV }}/conda-bld
         echo "CONDA_PKG=${{ env.CONDA_ENV }}/conda-bld" >> $GITHUB_ENV
       if: matrix.label == 'linux-64'
     - uses: actions/cache/save@v3
