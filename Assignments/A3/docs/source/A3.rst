@@ -53,9 +53,10 @@ Disciplinary analysis
 Elements of interest
 ------------------------
 
-For the implented tool, every element derived of `IfcBuildngElement` marked as load-bearing is of interest.
+For the implented tool, every element derived of :code:`IfcBuildngElement` marked as load-bearing is of interest.
 
-For the further developed tool, all entities derived of `IfcElement` with a physical geometry is of interest to calculate accurate deadl-load. `IfcSpatialElement` is also of interest to determine live-loads.
+For the further developed tool, all entities derived of :code:`IfcElement` with a physical geometry is of interest to calculate accurate deadl-load.
+:code:`IfcSpatialElement` is also of interest to determine live-loads.
 
 
 Future extensions
