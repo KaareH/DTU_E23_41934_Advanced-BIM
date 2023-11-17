@@ -21,10 +21,24 @@ from OCC.Core.Geom import Geom_CartesianPoint
 from OCC.Core.AIS import AIS_Line
 from OCC.Core.Bnd import Bnd_OBB
 from OCC.Core.BRepBndLib import brepbndlib
+from OCC.Core.AIS import AIS_InteractiveContext
+from OCC.Core.AIS import AIS_Shape
+from OCC.Core.AIS import AIS_TextLabel
+from OCC.Core.TCollection import TCollection_AsciiString, TCollection_ExtendedString
 import OCC.Core.BRepPrimAPI
 import OCC.Core.BRepTools
 
 from PIL import Image
+
+from pyconbim.analyticalModel import *
+import pyconbim.geomUtils as geomUtils
+
+RED = Quantity_Color(1.0, 0.0, 0.0, Quantity_TOC_RGB)
+GREEN = Quantity_Color(0.0, 1.0, 0.0, Quantity_TOC_RGB)
+BLUE = Quantity_Color(0.0, 0.0, 1.0, Quantity_TOC_RGB)
+MAGENTA = Quantity_Color(1.0, 0.0, 1.0, Quantity_TOC_RGB)
+BLACK = Quantity_Color(0.0, 0.0, 0.0, Quantity_TOC_RGB)
+GREY = Quantity_Color(0.5, 0.5, 0.5, Quantity_TOC_RGB)
 
 def quickJupyterRender(elements_render, settings, my_renderer = None):
     """Interactive renderer in Jupyter notebook"""
@@ -157,3 +171,189 @@ def FitToShape(occ_display, shape, enlarge=0.02):
 
     return bbox, bboxShp
 
+def RenderStructuralMembersFunc(renderer, **args):
+    """Render structural members"""
+
+    try:
+        modelData = args['modelData']
+        aModel = args['analyticalModel']
+        members = aModel.members
+    except Exception as e:
+        print(f"Error! {e}")
+        return
+    
+    try:
+        settings = args['settings']
+    except Exception as e:
+        settings = {}
+
+    if settings.get('render_bodies') == None:
+        settings['render_bodies'] = True
+
+    WIRE_SIZE = 10.0
+
+    def renderLabel(text, GUID, color=BLACK):
+        """GUID for OBB lookup"""
+        # TODO: Fix this, crashes without error 
+
+        # Render label
+        # obb = modelData.obbs[GUID]
+        # textLabel = AIS_TextLabel()
+        # textLabel.SetPosition(gp_Pnt(obb.Center()))
+        # textLabel.SetText(TCollection_ExtendedString(text))
+        # textLabel.SetColor(color)
+
+        # renderer.Context.Display(textLabel, False)
+        return
+
+    def renderBeam(member):
+        # Render axis
+        axis = member.axis
+        shape = axis
+
+        ais_shp = AIS_Shape(shape)
+        ais_shp.SetWidth(WIRE_SIZE)
+        ais_shp.SetColor(MAGENTA)
+        ais_context.Display(ais_shp, False)
+
+        # Render points
+        wire = shape
+
+        p1, p2 = geomUtils.get_wire_endpoints(wire)
+
+        renderer.DisplayShape(
+            p1,
+            # color=color,
+        )
+        renderer.DisplayShape(
+            p2,
+            # color=color,
+        )
+        renderLabel("Beam", member.GUID)
+        return
+
+    def renderColumn(member):
+        wire = member.axis
+
+        # Render axis
+        shape = wire
+        ais_shp = AIS_Shape(shape)
+        ais_shp.SetWidth(WIRE_SIZE)
+        ais_shp.SetColor(BLUE)
+        ais_context.Display(ais_shp, False)
+
+        # Render points
+        p1, p2 = geomUtils.get_wire_endpoints(wire)
+        renderer.DisplayShape(
+            p1,
+            color=BLUE,
+        )
+        renderer.DisplayShape(
+            p2,
+            color=BLUE,
+        )
+        renderLabel("Column", member.GUID)
+        return
+
+    def renderFooting(member):
+        body = member.body
+        renderer.DisplayShape(
+            body,
+            color=BLACK,
+            transparency=transparency,
+            # update=to_update,
+        )
+        renderer.DisplayShape(
+            member.pnt,
+            color=BLACK,
+            transparency=transparency,
+            # update=to_update,
+        )
+        renderLabel("Footing", member.GUID)
+        return
+    
+    def renderSlab(member):
+        shape = member.surface
+        renderer.DisplayShape(
+            shape,
+            color=RED,
+            transparency=0.8,
+            update=to_update,
+        )
+        renderLabel("Slab", member.GUID)
+        return
+    
+    def renderVirtualMember(member):
+        wire = member.axis
+
+        # Render axis
+        shape = wire
+        ais_shp = AIS_Shape(shape)
+        ais_shp.SetWidth(WIRE_SIZE)
+        ais_shp.SetColor(GREEN)
+        ais_context.Display(ais_shp, False)
+        # Render points
+        p1, p2 = geomUtils.get_wire_endpoints(wire)
+        renderer.DisplayShape(
+            p1,
+            color=MAGENTA,
+        )
+        renderer.DisplayShape(
+            p2,
+            color=MAGENTA,
+        )
+        return
+
+    ais_context = renderer.GetContext()
+
+    #################
+    # Render bodies #
+    #################
+    if settings.get('render_bodies'):
+        transparency=0.7
+        if settings.get('bodies_transparency'):
+            transparency = settings['bodies_transparency']
+
+        for i,  (GUID, member) in enumerate(members.items()):
+            to_update = i % 50 == 0
+            try:
+                if type(member) in [Beam, Column]:
+                    body = modelData.shapes[GUID]['Body'].geometry
+                    renderer.DisplayShape(
+                        body,
+                        color=GREY,
+                        transparency=transparency,
+                    )
+            except Exception as e:
+                print(e)
+
+    #############################
+    # Render structural members #
+    #############################
+
+    transparency = 0.8
+    # Idea: have render code be part of each Structural Members own class
+    for i,  (GUID, member) in enumerate(members.items()):
+        to_update = i % 50 == 0
+
+        transparency = 0.8
+        try:
+            if type(member) == Beam:
+                renderBeam(member)
+            elif type(member) == Column:
+                renderColumn(member)
+            elif type(member) == Footing:
+                renderFooting(member)
+            elif type(member) == VirtualMember:
+                renderVirtualMember(member)
+            elif type(member) == Slab:
+                renderSlab(member)
+            else:
+                pass
+
+        except Exception as e:
+                print(f"Error! {e}")
+                
+
+    renderer.FitAll()
+    return
