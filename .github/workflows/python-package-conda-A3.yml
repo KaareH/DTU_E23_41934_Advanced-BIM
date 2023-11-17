@@ -107,6 +107,8 @@ jobs:
         gh extension install actions/gh-actions-cache
         gh actions-cache delete "${{ matrix.label }}-conda-pkg-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}" --confirm
       if: matrix.label == 'linux-64'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/cache/save@v3
       if: matrix.label == 'linux-64'
       id: save-cache-package
