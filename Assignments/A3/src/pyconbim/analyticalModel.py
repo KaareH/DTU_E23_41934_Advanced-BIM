@@ -19,14 +19,14 @@ class Knot3D:
     def __init__(self) -> None:
         pass
 
-class StructuralMember:
+class StructuralMember(ABC):
     """"Abstract class for structural members"""
 
     def __init__(self, GUID) -> None:
         self.GUID = GUID
         self.nodes = []
 
-class PhysicalMember(StructuralMember):
+class PhysicalMember(StructuralMember, ABC):
     def __init__(self, GUID) -> None:
         super().__init__(GUID)
     
@@ -53,6 +53,9 @@ class AxialMember(PhysicalMember):
         self.axis = axis
 
     def to_ifc_structuralMember(self, model):
+        super().to_ifc_structuralMember(model)
+
+        # TODO: Add representaiton
         curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember")
 
         return curveMember
@@ -66,6 +69,10 @@ class PlanarMember(PhysicalMember):
         self.surface = surface
     
     def to_ifc_structuralMember(self, model):
+        """Return IfcStructuralSurfaceMember"""
+        super().to_ifc_structuralMember(model)
+
+        # TODO: Add representaiton
         surfaceMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralSurfaceMember")
 
         return surfaceMember
@@ -94,6 +101,10 @@ class Footing(PhysicalMember):
         self.body = body
         self.pnt = pnt
 
+    def to_ifc_structuralMember(self, model):
+        super().to_ifc_structuralMember(model)
+        pass
+
 class AnalyticalModel:
     """
         Container for analytical structal members.
@@ -118,6 +129,7 @@ class AnalyticalModel:
     
     def to_ifc_analysisModel(self, model):
         """"Return model as a IfcStructuralAnalysisModel with structural members"""
+
         analysisModel = run("root.create_entity", model, ifc_class="IfcStructuralAnalysisModel")
         # run("aggregate.assign_object", model, relating_object=building, product=analysisModel)
         
