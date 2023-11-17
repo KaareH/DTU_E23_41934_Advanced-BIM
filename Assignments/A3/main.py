@@ -9,29 +9,38 @@ import ifcopenshell
 from pyconbim.geomUtils import *
 from pyconbim.ifcUtils import *
 from pyconbim.rendering import *
+from pyconbim.analyticalModel import *
 import pyconbim.utils
 
+import createIfcAnalyticalModel
+import doPyNiteFEA
+
 def runThis():
-    models = load_models(model_dir='/Users/Kaare/My Drive/DTU/Kurser/Videregaaende BIM - 41934/IFC-models\SkyLab',
-                     models={'ark': 'LLYN - ARK.ifc',
-                             'stru': 'LLYN - STRU.ifc',
+    models = load_models(model_dir='./models',
+                     models={'simple-frame': 'simple-frame.ifc',
                              })
+    model = models['simple-frame']
+    
+    # models = load_models(model_dir="./models",
+    #                      models={
+    #                          'building': 'AC20-Institute-Var-2.ifc',
+    #                      })
+    # model = models['building']
 
-
-    model = models['stru']
-    modelData = ModelData(model)
-
-    print(len(modelData.shapes))
-
-    shapes = [shape['Body'].geometry for _, shape in modelData.shapes.items()]
-
-    print("Ready to render in window")
-    RenderInWindow(SimpleRenderFunc, shapes=shapes)
-
+    # models = load_models(model_dir='./models',
+    #                      models={'stru': 'LLYN - STRU.ifc',
+    #                             #  'ark': 'LLYN - ARK.ifc',
+    #                          })
+    # model = models['stru']
+    
+    aModel = createIfcAnalyticalModel.runThis(model, outputFileName="./output/analyticalModel.ifc")
+    doPyNiteFEA.runThis(aModel)
 
 if __name__ == "__main__":
     print(f"ifcopenshell version: {ifcopenshell.version}")
     print(f"Python-version {sys.version}")
-    # print("See AdvBIM-A2_Analysis.ipynb")
 
     runThis()
+
+    print("Done.")
+    exit(0)
