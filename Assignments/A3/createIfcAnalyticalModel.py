@@ -210,10 +210,7 @@ def runThis(model, outputFileName):
     print(f"Creating IfcStructuralAnalysisModel...")
     aModel.to_ifc_analysisModel(modelData.model)
 
-    fileName = outputFileName
-    print(f"Writing to {fileName}...")
-    modelData.model.write(fileName)
-    print("Done")
+    pyconbim.ifcUtils.writeToFile(modelData.model, outputFileName)
 
     return aModel
 

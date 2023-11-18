@@ -33,7 +33,7 @@ def runThis():
     #                          })
     # model = models['stru']
     
-    aModel = createIfcAnalyticalModel.runThis(model, outputFileName="./output/analyticalModel.ifc")
+    aModel = createIfcAnalyticalModel.runThis(model, outputFileName="analyticalModel.ifc")
     doPyNiteFEA.runThis(aModel)
 
 if __name__ == "__main__":

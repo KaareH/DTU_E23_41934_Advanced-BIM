@@ -183,3 +183,14 @@ def getCurveShapes(elements):
         curveShapes.append(curveShape)
     
     return curveShapes
+
+def writeToFile(model, fileName, directory="./output"):
+    """Write Ifc-model to file"""
+
+    if not fileName.endswith(".ifc"):
+        fileName = fileName.join(".ifc")
+
+    filePath = os.path.join(directory, fileName)
+    print(f"Writing to {filePath}...")
+    model.write(filePath)
+    print("Done")
