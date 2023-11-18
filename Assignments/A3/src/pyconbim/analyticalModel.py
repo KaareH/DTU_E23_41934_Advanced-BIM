@@ -56,7 +56,27 @@ class AxialMember(PhysicalMember):
         super().to_ifc_structuralMember(model)
 
         # TODO: Add representaiton
+        # TODO: Add direction
         curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember")
+
+        context = ifcopenshell.util.representation.get_context(model, "Model", "Axis", "GRAPH_VIEW")
+        # geometry = ifcopenshell.geom.occ_utils.serialize_shape(self.axis)
+        # print(geometry)
+        # geometry = ifcopenshell.geom.occ_utils.create_shape_from_serialization(self.axis)
+        # print(geometry)
+        # axis = ifcopenshell.api.run("geometry.add_axis_representation", model,
+        #                             context=context, axis=geometry
+        # )
+
+        productDefinitionShape = ifcopenshell.geom.serialise(model.schema, self.axis)
+        # productDefinitionShape = ifcopenshell.geom.serialise(model.schema, geometry)
+        # direction = model.createIfcDirection((0., 0., 1.))
+        # body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
+
+        representation = model.createIfcShapeRepresentation(
+            ContextOfItems=context, RepresentationIdentifier="Axis", RepresentationType="Curve3D", Items=[productDefinitionShape])
+
+        ifcopenshell.api.run("geometry.assign_representation", model, product=curveMember, representation=representation)
 
         return curveMember
 
