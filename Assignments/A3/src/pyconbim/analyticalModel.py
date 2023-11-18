@@ -54,29 +54,29 @@ class AxialMember(PhysicalMember):
 
     def to_ifc_structuralMember(self, model):
         super().to_ifc_structuralMember(model)
-
         # TODO: Add representaiton
         # TODO: Add direction
-        curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember")
 
-        context = ifcopenshell.util.representation.get_context(model, "Model", "Axis", "GRAPH_VIEW")
-        # geometry = ifcopenshell.geom.occ_utils.serialize_shape(self.axis)
-        # print(geometry)
-        # geometry = ifcopenshell.geom.occ_utils.create_shape_from_serialization(self.axis)
-        # print(geometry)
-        # axis = ifcopenshell.api.run("geometry.add_axis_representation", model,
-        #                             context=context, axis=geometry
-        # )
+        direction = model.createIfcDirection((1., 0., 0.))
+        curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
+        curveMember.Axis = direction
 
-        productDefinitionShape = ifcopenshell.geom.serialise(model.schema, self.axis)
-        # productDefinitionShape = ifcopenshell.geom.serialise(model.schema, geometry)
-        # direction = model.createIfcDirection((0., 0., 1.))
-        # body = ifcopenshell.util.representation.get_context(model, "Model", "Body", "MODEL_VIEW")
+        p1, p2 = geomUtils.get_wire_endpoints(self.axis)
+        P1 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p1.Coord()})
+        P2 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p2.Coord()})
+        V1 = model.create_entity("IfcVertexPoint", **{"VertexGeometry": P1})
+        V2 = model.create_entity("IfcVertexPoint", **{"VertexGeometry": P2})
 
-        representation = model.createIfcShapeRepresentation(
-            ContextOfItems=context, RepresentationIdentifier="Axis", RepresentationType="Curve3D", Items=[productDefinitionShape])
+        edge = model.create_entity("IfcEdge", **{
+            "EdgeStart": V1,
+            "EdgeEnd": V2,})
 
-        ifcopenshell.api.run("geometry.assign_representation", model, product=curveMember, representation=representation)
+        context = ifcopenshell.util.representation.get_context(model, "Model")
+        topologyRepresentation = model.createIfcTopologyRepresentation(ContextOfItems=context, Items=[edge], RepresentationIdentifier="Reference", RepresentationType="Edge")
+
+        # productDefinitionShape = ifcopenshell.geom.serialise(model.schema, self.axis)
+
+        ifcopenshell.api.run("geometry.assign_representation", model, product=curveMember, representation=topologyRepresentation)
 
         return curveMember
 
@@ -150,9 +150,17 @@ class AnalyticalModel:
     def to_ifc_analysisModel(self, model):
         """"Return model as a IfcStructuralAnalysisModel with structural members"""
 
-        analysisModel = run("root.create_entity", model, ifc_class="IfcStructuralAnalysisModel")
-        # run("aggregate.assign_object", model, relating_object=building, product=analysisModel)
+        # Create analysis model
+        analysisModel = run("root.create_entity", model, ifc_class="IfcStructuralAnalysisModel", predefined_type="LOADING_3D")
+        # run("type.assign_type", model, related_object=analysisModel, relating_type=element_type)
         
+        # Assing to building
+        buildings = model.by_type("IfcBuilding")
+        assert len(buildings) == 1
+        building = buildings[0]
+        run("aggregate.assign_object", model, relating_object=building, product=analysisModel)
+        
+        # Create structural members
         curveMembers = []
         surfaceMembers = []
         for member in self.members.values():
