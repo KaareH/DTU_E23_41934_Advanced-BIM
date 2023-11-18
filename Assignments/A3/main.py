@@ -40,6 +40,15 @@ if __name__ == "__main__":
     print(f"ifcopenshell version: {ifcopenshell.version}")
     print(f"Python-version {sys.version}")
 
+    this_file = os.path.realpath(__file__)
+    try:
+        print(f"Changing directory to {os.path.dirname(this_file)}")
+        os.chdir(os.path.dirname(this_file))
+    except Exception as e:
+        print(f"Failed to change directory to {os.path.dirname(this_file)}")
+        print(e)
+        exit(1)
+
     runThis()
 
     print("Done.")
