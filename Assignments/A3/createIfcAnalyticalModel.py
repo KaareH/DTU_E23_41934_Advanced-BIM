@@ -100,10 +100,15 @@ def runThis(model, outputFileName):
             # assert 'FootPrint' in keysplaneface = OCC.Core.BRepBuilderAPI.BRepBuilderAPI_MakeFace(plane).Shape()
             plane = geomUtils.convert_bnd_to_plane(obb)
             planeface = OCC.Core.BRepBuilderAPI.BRepBuilderAPI_MakeFace(plane).Shape()
+
+            commonSurface = find_solid_face_intersection(body, planeface)
+
             # Note: commonSurface is taken in the middle of the obb
-            commonSurface = BRepAlgoAPI_Common(body, planeface).Shape()
+            # commonSurface = BRepAlgoAPI_Common(body, planeface).Shape()
+            # commonSurface = BRepAlgoAPI_Common(body, planeface)
+            #print(type(commonSurface))
             
-            member = Slab(GUID, commonSurface)
+            member = Slab(GUID, commonSurface, plane)
             aModel.addMember(member)
             
 
@@ -205,7 +210,7 @@ def runThis(model, outputFileName):
             continue
         aModel.addMember(virtualMember)
 
-    RenderInWindow(RenderStructuralMembersFunc, modelData=modelData, analyticalModel=aModel)
+    # RenderInWindow(RenderStructuralMembersFunc, modelData=modelData, analyticalModel=aModel)
 
     print(f"Creating IfcStructuralAnalysisModel...")
     aModel.to_ifc_analysisModel(modelData.model)

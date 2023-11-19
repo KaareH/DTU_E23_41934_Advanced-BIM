@@ -13,6 +13,9 @@ import ifcopenshell.geom.occ_utils
 import ifcopenshell.api.geometry
 from ifcopenshell.api import run
 
+from OCC.Core.BRep import BRep_Tool
+from OCC.Extend.TopologyUtils import TopologyExplorer
+
 import pyconbim.geomUtils as geomUtils
 
 class Knot3D:
@@ -53,9 +56,14 @@ class AxialMember(PhysicalMember):
         self.axis = axis
 
     def to_ifc_structuralMember(self, model):
+        """
+        Return IfcStructuralCurveMember
+
+        https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcStructuralCurveMember.htm
+        """
         super().to_ifc_structuralMember(model)
-        # TODO: Add representaiton
-        # TODO: Add direction
+        # TODO: Add direction, currently not correct
+        # TODO: Use axis instead of endpoints. Use IfcEdgeCurve instead of IfcEdge
 
         direction = model.createIfcDirection((1., 0., 0.))
         curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
@@ -72,7 +80,8 @@ class AxialMember(PhysicalMember):
             "EdgeEnd": V2,})
 
         context = ifcopenshell.util.representation.get_context(model, "Model")
-        topologyRepresentation = model.createIfcTopologyRepresentation(ContextOfItems=context, Items=[edge], RepresentationIdentifier="Reference", RepresentationType="Edge")
+        topologyRepresentation = model.createIfcTopologyRepresentation(ContextOfItems=context,
+                    Items=[edge], RepresentationIdentifier="Reference", RepresentationType="Edge")
 
         # productDefinitionShape = ifcopenshell.geom.serialise(model.schema, self.axis)
 
@@ -83,17 +92,88 @@ class AxialMember(PhysicalMember):
 class PlanarMember(PhysicalMember):
     """Abstract class for planar members"""
 
-    def __init__(self, GUID, surface) -> None:
+    def __init__(self, GUID, surface, plane) -> None:
         super().__init__(GUID)
         # Do assert here
         self.surface = surface
-    
+        self.plane = plane
+
     def to_ifc_structuralMember(self, model):
-        """Return IfcStructuralSurfaceMember"""
+        """
+        Return IfcStructuralSurfaceMember
+
+        https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcStructuralSurfaceMember.htm
+        """
         super().to_ifc_structuralMember(model)
 
-        # TODO: Add representaiton
-        surfaceMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralSurfaceMember")
+        # TODO: Add local placement
+        surfaceMember = ifcopenshell.api.run("root.create_entity", model,
+                ifc_class="IfcStructuralSurfaceMember", predefined_type="SHELL")
+        
+        plane, outerCurves, innerCurves = geomUtils.deconstruct_face(self.surface)
+        assert len(outerCurves) == 1
+        wire_outerCurve = outerCurves[0]
+        outerCurve = ifcopenshell.geom.serialise(model.schema, outerCurves[0])
+        innerCurves = [ifcopenshell.geom.serialise(model.schema, innerCurve) for innerCurve in innerCurves]
+
+        # Make polyline
+        t = TopologyExplorer(wire_outerCurve)
+        vertices = list()
+        for vert in t.vertices():
+            vertices.append(vert)
+
+        # TODO: Check if vertices are in correct order. Gives wrong surface if not
+        points = []
+        for vert in vertices:
+            pnt = BRep_Tool.Pnt(vert)
+            ifcPnt = model.create_entity("IfcCartesianPoint", **{"Coordinates": [*pnt.Coord()]})
+            points.append(ifcPnt)
+
+        polyline = model.create_entity("IfcPolyline", **{
+            "Points": points,
+        })
+
+        outerCurve = polyline
+
+        # Create plane
+        plane = model.create_entity("IfcPlane", **{
+            "Position": model.create_entity("IfcAxis2Placement3D", **{
+                "Location": model.create_entity("IfcCartesianPoint", **{"Coordinates": [*self.plane.Location().Coord()]}),
+                "Axis": model.create_entity("IfcDirection", **{"DirectionRatios": [*self.plane.Axis().Direction().Coord()]}),
+                "RefDirection": model.create_entity("IfcDirection", **{"DirectionRatios": [*self.plane.XAxis().Direction().Coord()]}),
+            }),
+        })
+
+        # TODO: Add inner boundaries
+        # https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcCurveBoundedPlane.htm
+        surface = model.create_entity("IfcCurveBoundedPlane", **{
+            "BasisSurface": plane,
+            "OuterBoundary": outerCurve,
+            # "InnerBoundaries": innerCurves,
+            "InnerBoundaries": [],
+        })
+
+        polyloop = model.create_entity("IfcPolyLoop", **{  
+            "Polygon": points,
+        })
+
+        facebound = model.create_entity("IfcFaceBound", **{
+            "Bound": polyloop,
+            "Orientation": True,
+        })
+
+        faceSurface =  model.create_entity("IfcFaceSurface", **{
+            "Bounds": [facebound],
+            "FaceSurface": surface,
+            "SameSense": True,
+           })
+
+        context = ifcopenshell.util.representation.get_context(model, "Model")
+        topologyRepresentation = model.createIfcTopologyRepresentation(
+            ContextOfItems=context, Items=[faceSurface],
+            RepresentationIdentifier="Reference", RepresentationType="Face")
+
+        ifcopenshell.api.run("geometry.assign_representation", model, product=surfaceMember, representation=topologyRepresentation)
 
         return surfaceMember
 
@@ -106,12 +186,12 @@ class Column(AxialMember):
         super().__init__(GUID, axis)
 
 class Slab(PlanarMember):
-    def __init__(self, GUID, surface) -> None:
-        super().__init__(GUID, surface)
+    def __init__(self, GUID, surface, plane) -> None:
+        super().__init__(GUID, surface, plane)
 
 class Wall(PlanarMember):
-    def __init__(self, GUID, surface) -> None:
-        super().__init__(GUID, surface)
+    def __init__(self, GUID, surface, plane) -> None:
+        super().__init__(GUID, surface, plane)
 
 class Footing(PhysicalMember):
     """Footing. This is a special member, as it defines boundary conditions for the model"""

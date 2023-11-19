@@ -34,6 +34,19 @@ from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.gp import gp_Pln
 from OCC.Core.gp import gp_Ax3
 from OCC.Core.TopExp import topexp
+from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_FACE
+from OCC.Core.BRep import BRep_Tool
+from OCC.Core.gp import gp_Pnt, gp_Pln, gp_Dir, gp_Ax3
+from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
+from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_WIRE, TopAbs_FACE
+from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
+from OCC.Core.TopoDS import topods, TopoDS_Face
+from OCC.Core.gp import gp_Pnt
+from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Common
+from OCC.Core.TopoDS import topods
+from OCC.Core.TopoDS import TopoDS_Compound, TopoDS_Builder
 
 def convert_bnd_to_shape(the_box):
     """Converts a bounding box to a box shape."""
@@ -303,3 +316,63 @@ def find_closest_points(wire1, wire2):
 def distance_between_points(p1: gp_Pnt, p2: gp_Pnt) -> float:
     """Calculate distance between two points"""
     return p1.Distance(p2)
+
+def find_solid_face_intersection(shape, face):
+    """Compute the intersection between a solid and a face. Return a TopoDS_Face"""
+    # Create a compound to store the result
+    result_compound = TopoDS_Compound()
+    builder = TopoDS_Builder()
+    builder.MakeCompound(result_compound)
+
+    # Perform the intersection
+    common_algo = BRepAlgoAPI_Common(shape, face)
+    common_algo.Build()
+
+    # Get the resulting shape
+    result_shape = common_algo.Shape()
+
+    # Add the resulting shape to the compound
+    builder.Add(result_compound, result_shape)
+
+    # Extract faces from the compound
+    face_list = []
+    face_exp = TopExp_Explorer(result_compound, TopAbs_FACE)
+    while face_exp.More():
+        # face_list.append(topods_Face(face_exp.Current()))
+        face_list.append(topods.Face(face_exp.Current()))
+        face_exp.Next()
+
+    # Return the first face (assuming there's only one face in the result)
+    if face_list:
+        assert len(face_list) == 1
+        return face_list[0]
+    else:
+        return None
+
+def deconstruct_face(face):
+    """Deconstruct a TopoDS_Face into a surface and a list of wires"""
+    # Get the underlying surface
+    face_surface = BRepAdaptor_Surface(face)
+
+    # Get the outer boundary wires
+    outer_wires = []
+    outer_exp = TopExp_Explorer(face, TopAbs_WIRE)
+    while outer_exp.More():
+        wire = topods.Wire(outer_exp.Current())
+        outer_wires.append(wire)
+        outer_exp.Next()
+
+    # Get the inner boundary wires
+    inner_wires = []
+    inner_exp = TopExp_Explorer(face, TopAbs_FACE)
+    while inner_exp.More():
+        inner_face = topods.Face(inner_exp.Current())
+        inner_exp.Next()
+
+        inner_wire_exp = TopExp_Explorer(inner_face, TopAbs_WIRE)
+        while inner_wire_exp.More():
+            inner_wire = topods.Wire(inner_wire_exp.Current())
+            inner_wires.append(inner_wire)
+            inner_wire_exp.Next()
+
+    return face_surface, outer_wires, inner_wires
