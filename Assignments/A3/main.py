@@ -18,8 +18,10 @@ import doPyNiteFEA
 def runThis():
     models = load_models(model_dir='./models',
                      models={'simple-frame': 'simple-frame.ifc',
+                             'simple-frame-with-slab': 'simple-frame-with-slab.ifc',
                              })
-    model = models['simple-frame']
+    # model = models['simple-frame']
+    model = models['simple-frame-with-slab']
     
     # models = load_models(model_dir="./models",
     #                      models={
