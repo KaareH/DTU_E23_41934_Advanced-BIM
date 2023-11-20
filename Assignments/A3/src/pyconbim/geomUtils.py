@@ -355,6 +355,7 @@ def deconstruct_face(face: TopoDS_Face):
     face_surface = BRepAdaptor_Surface(face)
     outer_wire = breptools.OuterWire(face)
     #inner_wires = breptools.OriEdgeInFace()
-    inner_wires = None
+    # TODO: Find inner wires
+    inner_wires = []
     return face_surface, outer_wire, inner_wires
 
