@@ -16,6 +16,7 @@ from OCC.Core.Bnd import Bnd_OBB
 from OCC.Core.BRepBndLib import brepbndlib
 import OCC.Core.BRepPrimAPI
 import OCC.Core.BRepTools
+from OCC.Core.BRepTools import breptools
 from OCC.Core.gp import gp_Vec, gp_Dir
 from OCC.Core.TopoDS import TopoDS_Vertex, TopoDS_Wire
 from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
@@ -351,28 +352,9 @@ def find_solid_face_intersection(shape, face: TopoDS_Face):
 
 def deconstruct_face(face: TopoDS_Face):
     """Deconstruct a TopoDS_Face into a surface and a list of wires"""
-    # Get the underlying surface
     face_surface = BRepAdaptor_Surface(face)
+    outer_wire = breptools.OuterWire(face)
+    #inner_wires = breptools.OriEdgeInFace()
+    inner_wires = None
+    return face_surface, outer_wire, inner_wires
 
-    # Get the outer boundary wires
-    outer_wires = []
-    outer_exp = TopExp_Explorer(face, TopAbs_WIRE)
-    while outer_exp.More():
-        wire = topods.Wire(outer_exp.Current())
-        outer_wires.append(wire)
-        outer_exp.Next()
-
-    # Get the inner boundary wires
-    inner_wires = []
-    inner_exp = TopExp_Explorer(face, TopAbs_FACE)
-    while inner_exp.More():
-        inner_face = topods.Face(inner_exp.Current())
-        inner_exp.Next()
-
-        inner_wire_exp = TopExp_Explorer(inner_face, TopAbs_WIRE)
-        while inner_wire_exp.More():
-            inner_wire = topods.Wire(inner_wire_exp.Current())
-            inner_wires.append(inner_wire)
-            inner_wire_exp.Next()
-
-    return face_surface, outer_wires, inner_wires

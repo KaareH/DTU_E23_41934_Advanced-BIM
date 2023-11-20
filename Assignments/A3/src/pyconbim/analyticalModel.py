@@ -14,9 +14,10 @@ import ifcopenshell.api.geometry
 from ifcopenshell.api import run
 
 from OCC.Core.BRep import BRep_Tool
-from OCC.Extend.TopologyUtils import TopologyExplorer
+from OCC.Core.BRepTools import BRepTools_WireExplorer
 
 import pyconbim.geomUtils as geomUtils
+import pyconbim.rendering as rendering
 
 class Knot3D:
     def __init__(self) -> None:
@@ -110,17 +111,20 @@ class PlanarMember(PhysicalMember):
         surfaceMember = ifcopenshell.api.run("root.create_entity", model,
                 ifc_class="IfcStructuralSurfaceMember", predefined_type="SHELL")
         
-        plane, outerCurves, innerCurves = geomUtils.deconstruct_face(self.surface)
-        assert len(outerCurves) == 1
-        wire_outerCurve = outerCurves[0]
-        outerCurve = ifcopenshell.geom.serialise(model.schema, outerCurves[0])
+        plane, outerCurve, innerCurves = geomUtils.deconstruct_face(self.surface)
+        wire_outerCurve = outerCurve
+        
+        outerCurve = ifcopenshell.geom.serialise(model.schema, outerCurve)
         innerCurves = [ifcopenshell.geom.serialise(model.schema, innerCurve) for innerCurve in innerCurves]
 
         # Make polyline
-        t = TopologyExplorer(wire_outerCurve)
         vertices = list()
-        for vert in t.vertices():
-            vertices.append(vert)
+        explorer = BRepTools_WireExplorer(wire_outerCurve, self.surface)
+        while explorer.More():
+            edge = explorer.Current()
+            vertex = explorer.CurrentVertex()
+            explorer.Next()
+            vertices.append(vertex)
 
         # TODO: Check if vertices are in correct order. Gives wrong surface if not
         points = []
