@@ -15,6 +15,8 @@ from ifcopenshell.api import run
 
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepTools import BRepTools_WireExplorer
+from OCC.Core.NCollection import NCollection_Mat4
+from OCC.Core.TopLoc import TopLoc_Location
 
 import pyconbim.geomUtils as geomUtils
 import pyconbim.rendering as rendering
@@ -66,11 +68,21 @@ class AxialMember(PhysicalMember):
         # TODO: Add direction, currently not correct
         # TODO: Use axis instead of endpoints. Use IfcEdgeCurve instead of IfcEdge
 
+        # Find unit-scale and transform shape
+        unit_scale = ifcopenshell.util.unit.calculate_unit_scale(model)
+        location = self.axis.Location()
+        transformation = location.Transformation()
+        scaleFactor = float(1.0/unit_scale)
+
+        transformation.SetScaleFactor(scaleFactor)
+        location = TopLoc_Location(transformation)
+        wireShape = self.axis.Located(location, False)
+
         direction = model.createIfcDirection((1., 0., 0.))
         curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
         curveMember.Axis = direction
 
-        p1, p2 = geomUtils.get_wire_endpoints(self.axis)
+        p1, p2 = geomUtils.get_wire_endpoints(wireShape)
         P1 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p1.Coord()})
         P2 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p2.Coord()})
         V1 = model.create_entity("IfcVertexPoint", **{"VertexGeometry": P1})
@@ -90,6 +102,7 @@ class AxialMember(PhysicalMember):
 
         return curveMember
 
+import ifcopenshell.util.unit
 class PlanarMember(PhysicalMember):
     """Abstract class for planar members"""
 
@@ -107,11 +120,21 @@ class PlanarMember(PhysicalMember):
         """
         super().to_ifc_structuralMember(model)
 
+        # Find unit-scale and tranform shape
+        unit_scale = ifcopenshell.util.unit.calculate_unit_scale(model)
+        location = self.surface.Location()
+        transformation = location.Transformation()
+        scaleFactor = float(1.0/unit_scale)
+
+        transformation.SetScaleFactor(scaleFactor)
+        location = TopLoc_Location(transformation)
+        surfaceShape = self.surface.Located(location, False)
+
         # TODO: Add local placement
         surfaceMember = ifcopenshell.api.run("root.create_entity", model,
                 ifc_class="IfcStructuralSurfaceMember", predefined_type="SHELL")
         
-        plane, outerCurve, innerCurves = geomUtils.deconstruct_face(self.surface)
+        plane, outerCurve, innerCurves = geomUtils.deconstruct_face(surfaceShape)
         wire_outerCurve = outerCurve
         
         outerCurve = ifcopenshell.geom.serialise(model.schema, outerCurve)
@@ -119,7 +142,7 @@ class PlanarMember(PhysicalMember):
 
         # Make polyline
         vertices = list()
-        explorer = BRepTools_WireExplorer(wire_outerCurve, self.surface)
+        explorer = BRepTools_WireExplorer(wire_outerCurve, surfaceShape)
         while explorer.More():
             edge = explorer.Current()
             vertex = explorer.CurrentVertex()

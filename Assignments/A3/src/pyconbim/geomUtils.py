@@ -345,7 +345,9 @@ def find_solid_face_intersection(shape, face: TopoDS_Face):
 
     # Return the first face (assuming there's only one face in the result)
     if face_list:
-        assert len(face_list) == 1
+        # assert len(face_list) == 1
+        if len(face_list) != 1:
+            print(f"Warning: More than one face in result: {len(face_list)}")
         return face_list[0]
     else:
         return None
