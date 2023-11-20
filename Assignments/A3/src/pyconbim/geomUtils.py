@@ -17,7 +17,7 @@ from OCC.Core.BRepBndLib import brepbndlib
 import OCC.Core.BRepPrimAPI
 import OCC.Core.BRepTools
 from OCC.Core.gp import gp_Vec, gp_Dir
-from OCC.Core.TopoDS import TopoDS_Vertex
+from OCC.Core.TopoDS import TopoDS_Vertex, TopoDS_Wire
 from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepTools import BRepTools_WireExplorer
@@ -48,7 +48,7 @@ from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCC.Core.TopoDS import topods
 from OCC.Core.TopoDS import TopoDS_Compound, TopoDS_Builder
 
-def convert_bnd_to_shape(the_box):
+def convert_bnd_to_shape(the_box: Bnd_OBB):
     """Converts a bounding box to a box shape."""
     barycenter = the_box.Center()
     x_dir = the_box.XDirection()
@@ -69,7 +69,7 @@ def convert_bnd_to_shape(the_box):
     box = BRepPrimAPI_MakeBox(axes, 2.0 * half_x, 2.0 * half_y, 2.0 * half_z).Shape()
     return box
 
-def convert_bnd_to_line(the_box, returnWire=False):
+def convert_bnd_to_line(the_box: Bnd_OBB, returnWire=False) -> AIS_Line:
     """Converts a bounding box to a line on the longest axis"""
     barycenter = the_box.Center()
     x_dir = the_box.XDirection()
@@ -108,7 +108,7 @@ def convert_bnd_to_line(the_box, returnWire=False):
 #     """Converts a bounding box to a plane based on the shortest side"""
 #     # from OCC.Core.HLRBRep import HLRAlgo_Projector
 
-def convert_bnd_to_plane(the_box):
+def convert_bnd_to_plane(the_box: Bnd_OBB) -> gp_Pln:
     """Converts a bounding box to a plane."""
     barycenter = the_box.Center()
     x_dir = the_box.XDirection()
@@ -195,14 +195,14 @@ def get_elementsOBB(elements_shape):
 
     return elements_obb
 
-def get_OBB(elmShape):
+def get_OBB(elmShape) -> Bnd_OBB:
     """Return OBB for a shape"""
     obb = Bnd_OBB()
     brepbndlib.AddOBB(elmShape, obb, True, True, True)
 
     return obb
 
-def elongateOBB(OBB, mulF=1.0, addF=0.0):
+def elongateOBB(OBB: Bnd_OBB, mulF=1.0, addF=0.0) -> Bnd_OBB:
     """Elongate an OBB in its longest direction"""
     obb = Bnd_OBB()
     obb.Add(OBB)
@@ -223,7 +223,7 @@ def elongateOBB(OBB, mulF=1.0, addF=0.0):
 
     return obb
 
-def is_wire_straight_line(wire, angularTolearance=0.01):
+def is_wire_straight_line(wire: TopoDS_Wire, angularTolearance=0.01) -> bool:
     """Check if a TopoDS_Wire is a straight line"""
     iter_edge = BRepTools_WireExplorer(wire)
     first_edge = iter_edge.Current()
@@ -252,7 +252,7 @@ def is_wire_straight_line(wire, angularTolearance=0.01):
         iter_edge.Next()
     return True
 
-def make_wire_from_points(points):
+def make_wire_from_points(points) -> TopoDS_Wire:
     """Make a TopoDS_Wire from a list of points"""
     wire_builder = BRepBuilderAPI_MakeWire()
     for i in range(len(points)-1):
@@ -296,7 +296,7 @@ def get_subShapes(shape):
     
     return subShapes
     
-def get_wire_endpoints(wire):
+def get_wire_endpoints(wire: TopoDS_Wire):
     """Get endpoints of a wire"""
     v1 = TopoDS_Vertex()
     v2 = TopoDS_Vertex()
@@ -307,7 +307,7 @@ def get_wire_endpoints(wire):
 
     return p1, p2
 
-def find_closest_points(wire1, wire2):
+def find_closest_points(wire1: TopoDS_Wire, wire2: TopoDS_Wire):
     """Return the closest points on two wires"""
     dist_shape_shape = BRepExtrema_DistShapeShape(wire1, wire2)
     dist_shape_shape.Perform()
@@ -317,7 +317,7 @@ def distance_between_points(p1: gp_Pnt, p2: gp_Pnt) -> float:
     """Calculate distance between two points"""
     return p1.Distance(p2)
 
-def find_solid_face_intersection(shape, face):
+def find_solid_face_intersection(shape, face: TopoDS_Face):
     """Compute the intersection between a solid and a face. Return a TopoDS_Face"""
     # Create a compound to store the result
     result_compound = TopoDS_Compound()
@@ -349,7 +349,7 @@ def find_solid_face_intersection(shape, face):
     else:
         return None
 
-def deconstruct_face(face):
+def deconstruct_face(face: TopoDS_Face):
     """Deconstruct a TopoDS_Face into a surface and a list of wires"""
     # Get the underlying surface
     face_surface = BRepAdaptor_Surface(face)
