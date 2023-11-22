@@ -39,6 +39,7 @@ BLUE = Quantity_Color(0.0, 0.0, 1.0, Quantity_TOC_RGB)
 MAGENTA = Quantity_Color(1.0, 0.0, 1.0, Quantity_TOC_RGB)
 BLACK = Quantity_Color(0.0, 0.0, 0.0, Quantity_TOC_RGB)
 GREY = Quantity_Color(0.5, 0.5, 0.5, Quantity_TOC_RGB)
+YELLOW = Quantity_Color(0.0, 1.0, 1.0, Quantity_TOC_RGB)
 
 def quickJupyterRender(elements_render, settings, my_renderer = None):
     """Interactive renderer in Jupyter notebook"""
@@ -283,6 +284,17 @@ def RenderStructuralMembersFunc(renderer, **args):
         renderLabel("Slab", member.GUID)
         return
     
+    def renderWall(member):
+        shape = member.surface
+        renderer.DisplayShape(
+            shape,
+            color=YELLOW,
+            transparency=0.8,
+            update=to_update,
+        )
+        renderLabel("Wall", member.GUID)
+        return
+    
     def renderVirtualMember(member):
         wire = member.axis
 
@@ -348,6 +360,8 @@ def RenderStructuralMembersFunc(renderer, **args):
                 renderVirtualMember(member)
             elif type(member) == Slab:
                 renderSlab(member)
+            elif type(member) == Wall:
+                renderWall(member)
             else:
                 pass
 
