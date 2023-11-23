@@ -78,8 +78,13 @@ class AxialMember(PhysicalMember):
         location = TopLoc_Location(transformation)
         wireShape = self.axis.Located(location, False)
 
+        name = f"{type(self).__name__}"
+        description = f"Analytical model for {self.GUID}. Created with {type(self)}."
         direction = model.createIfcDirection((1., 0., 0.))
         curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
+        curveMember = ifcopenshell.api.run("root.create_entity", model, name=name,
+                ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
+        curveMember.Description = description
         curveMember.Axis = direction
 
         p1, p2 = geomUtils.get_wire_endpoints(wireShape)
@@ -130,9 +135,12 @@ class PlanarMember(PhysicalMember):
         location = TopLoc_Location(transformation)
         surfaceShape = self.surface.Located(location, False)
 
+        name = f"{type(self).__name__}"
+        description = f"Analytical model for {self.GUID}. Created with {type(self)}."
         # TODO: Add local placement
-        surfaceMember = ifcopenshell.api.run("root.create_entity", model,
+        surfaceMember = ifcopenshell.api.run("root.create_entity", model, name=name,
                 ifc_class="IfcStructuralSurfaceMember", predefined_type="SHELL")
+        surfaceMember.Description = description
         
         plane, outerCurve, innerCurves = geomUtils.deconstruct_face(surfaceShape)
         wire_outerCurve = outerCurve
