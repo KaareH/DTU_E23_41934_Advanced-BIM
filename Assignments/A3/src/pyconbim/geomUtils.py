@@ -43,11 +43,13 @@ from OCC.Core.BRepAdaptor import BRepAdaptor_Surface
 from OCC.Core.TopExp import TopExp_Explorer
 from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_WIRE, TopAbs_FACE
 from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
-from OCC.Core.TopoDS import topods, TopoDS_Face
+from OCC.Core.TopoDS import topods, TopoDS_Face, TopoDS_Shape
 from OCC.Core.gp import gp_Pnt
 from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCC.Core.TopoDS import topods
 from OCC.Core.TopoDS import TopoDS_Compound, TopoDS_Builder
+from OCC.Core.gp import gp_Trsf, gp_Mat
+from OCC.Core.TopLoc import TopLoc_Location
 
 def convert_bnd_to_shape(the_box: Bnd_OBB):
     """Converts a bounding box to a box shape."""
@@ -361,3 +363,22 @@ def deconstruct_face(face: TopoDS_Face):
     inner_wires = []
     return face_surface, outer_wire, inner_wires
 
+def transform_to_local(shape: TopoDS_Shape, scaleFactor=1.0) -> (TopoDS_Shape, gp_Trsf):
+    """"
+    Transform a shape to local coordinates. Origin is center of OBB.
+    
+    Returns:
+        shape: TopoDS_Shape - Transformed shape
+        transformation: gp_Trsf - Transformation from global to local coordinates
+    """
+
+    # Move shape to orign with local transformation
+    OBB = get_OBB(shape)
+    transformation = gp_Trsf()
+    transformation.SetTransformation(OBB.Position())
+    transformation.SetScaleFactor(scaleFactor)
+    location = TopLoc_Location(transformation)
+    # shape.Location(location, False) <--- Don't use this. Otherwise it will not be copied
+    shape = shape.Located(location, False)
+
+    return shape, transformation

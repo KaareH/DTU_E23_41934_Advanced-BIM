@@ -6,20 +6,21 @@ Kaare G. S. Hansen, s214282 - DTU
 """
 
 from abc import ABC, abstractmethod
+import numpy as np
 
 import ifcopenshell
 import ifcopenshell.util.representation
 import ifcopenshell.geom.occ_utils
 import ifcopenshell.api.geometry
 from ifcopenshell.api import run
+import ifcopenshell.util.unit
 
 from OCC.Core.BRep import BRep_Tool
 from OCC.Core.BRepTools import BRepTools_WireExplorer
-from OCC.Core.NCollection import NCollection_Mat4
-from OCC.Core.TopLoc import TopLoc_Location
 
 import pyconbim.geomUtils as geomUtils
 import pyconbim.rendering as rendering
+import pyconbim.utils as utils
 
 class Knot3D:
     def __init__(self) -> None:
@@ -70,22 +71,26 @@ class AxialMember(PhysicalMember):
 
         # Find unit-scale and transform shape
         unit_scale = ifcopenshell.util.unit.calculate_unit_scale(model)
-        location = self.axis.Location()
-        transformation = location.Transformation()
         scaleFactor = float(1.0/unit_scale)
 
-        transformation.SetScaleFactor(scaleFactor)
-        location = TopLoc_Location(transformation)
-        wireShape = self.axis.Located(location, False)
+        # Move shape to orign with local transformation
+        wireShape, transformation = geomUtils.transform_to_local(self.axis, scaleFactor)
 
+        # Get matrix for IfcLocalPlacement
+        matrix = utils.getAffineTransformation(transformation)
+
+        # Create entity
         name = f"{type(self).__name__}"
         description = f"Analytical model for {self.GUID}. Created with {type(self)}."
         direction = model.createIfcDirection((1., 0., 0.))
-        curveMember = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
         curveMember = ifcopenshell.api.run("root.create_entity", model, name=name,
                 ifc_class="IfcStructuralCurveMember", predefined_type="RIGID_JOINED_MEMBER")
         curveMember.Description = description
         curveMember.Axis = direction
+
+        run("geometry.edit_object_placement", model, product=curveMember,
+            matrix=matrix, is_si=True)
+            # matrix=matrix, is_si=False)
 
         p1, p2 = geomUtils.get_wire_endpoints(wireShape)
         P1 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p1.Coord()})
@@ -107,7 +112,6 @@ class AxialMember(PhysicalMember):
 
         return curveMember
 
-import ifcopenshell.util.unit
 class PlanarMember(PhysicalMember):
     """Abstract class for planar members"""
 
@@ -127,14 +131,15 @@ class PlanarMember(PhysicalMember):
 
         # Find unit-scale and tranform shape
         unit_scale = ifcopenshell.util.unit.calculate_unit_scale(model)
-        location = self.surface.Location()
-        transformation = location.Transformation()
         scaleFactor = float(1.0/unit_scale)
 
-        transformation.SetScaleFactor(scaleFactor)
-        location = TopLoc_Location(transformation)
-        surfaceShape = self.surface.Located(location, False)
+        # Move shape to orign with local transformation
+        surfaceShape, transformation = geomUtils.transform_to_local(self.surface, scaleFactor)
 
+        # Get matrix for IfcLocalPlacement
+        matrix = utils.getAffineTransformation(transformation)
+
+        # Create entity
         name = f"{type(self).__name__}"
         description = f"Analytical model for {self.GUID}. Created with {type(self)}."
         # TODO: Add local placement
@@ -142,6 +147,10 @@ class PlanarMember(PhysicalMember):
                 ifc_class="IfcStructuralSurfaceMember", predefined_type="SHELL")
         surfaceMember.Description = description
         
+        run("geometry.edit_object_placement", model, product=surfaceMember,
+            matrix=matrix, is_si=True)
+            # matrix=matrix, is_si=False)
+
         plane, outerCurve, innerCurves = geomUtils.deconstruct_face(surfaceShape)
         wire_outerCurve = outerCurve
         
