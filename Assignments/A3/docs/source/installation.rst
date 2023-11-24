@@ -24,4 +24,4 @@ Steps
 Build documentation
 ------------------------
 1. :code:`cd Assingments/A3`.
-2. :code:`sphinx-build -M html -T docs/source/ docs/build/`.
+2. :code:`sphinx-build -M html docs/source/ docs/build/`.
