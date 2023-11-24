@@ -92,6 +92,7 @@ class AxialMember(PhysicalMember):
             matrix=matrix, is_si=True)
             # matrix=matrix, is_si=False)
 
+        # Should wireShape be transformed back to global coordinates?
         p1, p2 = geomUtils.get_wire_endpoints(wireShape)
         P1 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p1.Coord()})
         P2 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p2.Coord()})
@@ -182,9 +183,9 @@ class PlanarMember(PhysicalMember):
         # Create plane
         plane = model.create_entity("IfcPlane", **{
             "Position": model.create_entity("IfcAxis2Placement3D", **{
-                "Location": model.create_entity("IfcCartesianPoint", **{"Coordinates": [*self.plane.Location().Coord()]}),
-                "Axis": model.create_entity("IfcDirection", **{"DirectionRatios": [*self.plane.Axis().Direction().Coord()]}),
-                "RefDirection": model.create_entity("IfcDirection", **{"DirectionRatios": [*self.plane.XAxis().Direction().Coord()]}),
+                "Location": model.create_entity("IfcCartesianPoint", **{"Coordinates": [0.0, 0.0, 0.0]}),
+                "Axis": model.create_entity("IfcDirection", **{"DirectionRatios": [0.0, 0.0, 1.0]}),
+                "RefDirection": model.create_entity("IfcDirection", **{"DirectionRatios": [1.0, 0.0, 0.0]}),
             }),
         })
 
