@@ -1,0 +1,28 @@
+{
+    "model_fileName": "LLYN - STRU.ifc",
+    "corrections": {
+        "alter_loadBearing": [
+            {"GUID": "2slsY5KYr5HO3PriNy1wLy", "loadBearing": true},
+            {"GUID": "1hc9CyosT219imRlL3W8QI", "loadBearing": true},
+            {"GUID": "2LWv2nnB9FdxOZI8rLXaQl", "loadBearing": true},
+            {"GUID": "0mSI50pNf8rRH9cVJo0d5s", "loadBearing": true},
+            {"GUID": "1i2tsbcO94Zhbhn2sug8T2", "loadBearing": true},
+            {"GUID": "1i2tsbcO94Zhbhn2sug8Pg", "loadBearing": true},
+            {"GUID": "03YTIfgQz5JgSeGVmwI4gB", "loadBearing": true},
+            {"GUID": "1yki0fhSzFXALTAw3$rIum", "loadBearing": true},
+            {"GUID": "1yki0fhSzFXALTAw3$rI2P", "loadBearing": true},
+            {"GUID": "1yki0fhSzFXALTAw3$rI01", "loadBearing": true}
+        ],
+        "ignoreElement": [
+            {"GUID": "2WX0mmR5v9uPOsU_GU2FtN", "ignore": true},
+            {"GUID": "2aFNvSbW9BUfYX50Z_8fMb", "ignore": true},
+            {"GUID": "1z2$V4aYr8uus7xbttKlav", "ignore": true}
+        ],
+        "enlarge_OBB": {
+            "by_type": [
+                {"GUIDE": "16iVztvQvBdxi_mREc593p", "enlarge": 1.3},
+                {"GUIDE": "3cgthokUX8HuAcV5wVTtxB", "enlarge": 1.3}
+            ]
+        }
+    }
+}
