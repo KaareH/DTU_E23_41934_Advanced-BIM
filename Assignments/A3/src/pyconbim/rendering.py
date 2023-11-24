@@ -5,7 +5,7 @@ Kaare G. S. Hansen, s214282 - DTU
 41934 - Advanced BIM, E23
 """
 
-from deprecated import deprecated
+from deprecated.sphinx import deprecated
 import ifcopenshell.util
 
 from OCC.Display.SimpleGui import init_display
@@ -120,7 +120,10 @@ def SimpleRenderFunc(renderer, **args):
 
     renderer.FitAll()
 
-@deprecated("Use processGeometry and other renderFunc instead")
+@deprecated(reason=
+            "Use processGeometry and other renderFunc instead",
+            version="0.0.1",
+)
 def ElementsRenderFunc(renderer, **args):
     """Render a bunch of IFC elements. Only renders body"""
 

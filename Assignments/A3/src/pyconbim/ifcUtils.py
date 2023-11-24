@@ -8,7 +8,7 @@ Kaare G. S. Hansen, s214282 - DTU
 import os
 import sys
 import multiprocessing
-from deprecated import deprecated
+from deprecated.sphinx import deprecated
 
 import ifcopenshell
 import ifcopenshell.util.placement
@@ -133,7 +133,10 @@ def processGeometry(model):
     return shapeData, tree, unit_magnitude, unit_name
 
 
-@deprecated("Use processGeometry instead")
+@deprecated(
+        reason="""Use processGeometry instead""",
+        version="0.0.1",
+)
 def get_pdct_shape(element, settings):
     """Get the body shape for a single IFC element"""
 
@@ -156,7 +159,10 @@ def get_elementShapes(elements, settings):
 
     return elements_shape
 
-@deprecated("Use processGeometry instead")
+@deprecated(
+        reason="""Use processGeometry instead""",
+        version="0.0.1",
+)
 def getCurveShapes(elements):
     """Get the axis representation for elements"""
 
