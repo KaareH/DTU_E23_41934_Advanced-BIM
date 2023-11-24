@@ -364,7 +364,7 @@ def deconstruct_face(face: TopoDS_Face):
     return face_surface, outer_wire, inner_wires
 
 def transform_to_local(shape: TopoDS_Shape, scaleFactor=1.0) -> (TopoDS_Shape, gp_Trsf):
-    """"
+    """
     Transform a shape to local coordinates. Origin is center of OBB.
     
     Returns:
