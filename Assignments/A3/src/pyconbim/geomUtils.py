@@ -355,12 +355,24 @@ def find_solid_face_intersection(shape, face: TopoDS_Face):
         return None
 
 def deconstruct_face(face: TopoDS_Face):
-    """Deconstruct a TopoDS_Face into a surface and a list of wires"""
+    """
+    Deconstruct a TopoDS_Face into a surface and a list of wires.
+    Attempts to find the outer wire and inner wires (for holes).
+    """
     face_surface = BRepAdaptor_Surface(face)
     outer_wire = breptools.OuterWire(face)
-    #inner_wires = breptools.OriEdgeInFace()
-    # TODO: Find inner wires
+
     inner_wires = []
+    wire_exp = TopExp_Explorer(face, TopAbs_WIRE)
+    while wire_exp.More():
+        wire = topods.Wire(wire_exp.Current())
+        if wire == outer_wire:
+            pass
+        else:
+            inner_wires.append(wire)
+
+        wire_exp.Next()
+
     return face_surface, outer_wire, inner_wires
 
 def transform_to_local(shape: TopoDS_Shape, scaleFactor=1.0) -> (TopoDS_Shape, gp_Trsf):
@@ -382,3 +394,69 @@ def transform_to_local(shape: TopoDS_Shape, scaleFactor=1.0) -> (TopoDS_Shape, g
     shape = shape.Located(location, False)
 
     return shape, transformation
+
+def adaptive_wire_to_polyline(wire: TopoDS_Wire, face: TopoDS_Face, min_num_samples=10, max_num_samples=100) -> [gp_Pnt]:
+    """
+    Convert a TopoDS_Wire to a polyline. The polyline will be a list of gp_Pnt.
+
+    Lines will only be added as the wire vertices. Other curves will be sampled.
+
+    TODO: Add support for arcs and other curves.
+    TODO: Make num_samples adaptive based on curvature.
+    """
+    polyline_points = []
+
+    curve_adaptor = BRepAdaptor_Curve()
+    explorer = BRepTools_WireExplorer(wire, face)
+    while explorer.More():
+        edge = explorer.Current()
+        vertex = explorer.CurrentVertex()
+        explorer.Next()
+
+        curve_adaptor.Initialize(edge)
+        curve_type = GeomAbs_CurveType(curve_adaptor.GetType())
+        
+        # Line
+        if curve_type == GeomAbs_CurveType.GeomAbs_Line:
+            line = curve_adaptor.Line()
+            num_samples = 2
+            pnt = BRep_Tool.Pnt(vertex)
+            polyline_points.append(pnt)
+            continue
+
+        # Cirlce
+        elif curve_type == GeomAbs_CurveType.GeomAbs_Circle:
+            circle = curve_adaptor.Circle()
+            num_samples = 10
+
+        # Other
+        else:
+            print("Other type!!!!!!!")
+            num_samples = 10
+            # assert False
+
+        # Get first and last parameter for current edge
+        A_u = curve_adaptor.FirstParameter()
+        B_u = curve_adaptor.LastParameter()
+        # print("u = ", A_u, B_u)
+
+        A_P= gp_Pnt()
+        A_D1 = gp_Vec()
+        A_D2 = gp_Vec()
+        B_P = gp_Pnt()
+        B_D1 = gp_Vec()
+        B_D2 = gp_Vec()
+
+        curve_adaptor.D2(A_u, A_P, A_D1, A_D2)
+        curve_adaptor.D2(B_u, B_P, B_D1, B_D2)
+
+        is_same = A_D1 != B_D1
+        # print("Is same", is_same)
+        is_curved = not is_same
+
+        # Sample points along the curve and add them to the polyline
+        for u in np.linspace(A_u, B_u, num_samples):
+            pnt = curve_adaptor.Value(u)
+            polyline_points.append(pnt)
+
+    return polyline_points

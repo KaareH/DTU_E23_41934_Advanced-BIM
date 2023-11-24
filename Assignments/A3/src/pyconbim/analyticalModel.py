@@ -15,9 +15,6 @@ import ifcopenshell.api.geometry
 from ifcopenshell.api import run
 import ifcopenshell.util.unit
 
-from OCC.Core.BRep import BRep_Tool
-from OCC.Core.BRepTools import BRepTools_WireExplorer
-
 import pyconbim.geomUtils as geomUtils
 import pyconbim.rendering as rendering
 import pyconbim.utils as utils
@@ -154,31 +151,26 @@ class PlanarMember(PhysicalMember):
 
         plane, outerCurve, innerCurves = geomUtils.deconstruct_face(surfaceShape)
         wire_outerCurve = outerCurve
+        wire_innerCurves = innerCurves
         
-        outerCurve = ifcopenshell.geom.serialise(model.schema, outerCurve)
-        innerCurves = [ifcopenshell.geom.serialise(model.schema, innerCurve) for innerCurve in innerCurves]
+        def make_polyline_adaptive(wire, surfaceShape):
+            points = geomUtils.adaptive_wire_to_polyline(wire, surfaceShape)
 
-        # Make polyline
-        vertices = list()
-        explorer = BRepTools_WireExplorer(wire_outerCurve, surfaceShape)
-        while explorer.More():
-            edge = explorer.Current()
-            vertex = explorer.CurrentVertex()
-            explorer.Next()
-            vertices.append(vertex)
+            ifcPoints = []
+            for pnt in points:
+                ifcPnt = model.create_entity("IfcCartesianPoint", **{"Coordinates": [*pnt.Coord()]})
+                ifcPoints.append(ifcPnt)
 
-        # TODO: Check if vertices are in correct order. Gives wrong surface if not
-        points = []
-        for vert in vertices:
-            pnt = BRep_Tool.Pnt(vert)
-            ifcPnt = model.create_entity("IfcCartesianPoint", **{"Coordinates": [*pnt.Coord()]})
-            points.append(ifcPnt)
+            polyline = model.create_entity("IfcPolyline", **{
+                "Points": ifcPoints,
+            })
 
-        polyline = model.create_entity("IfcPolyline", **{
-            "Points": points,
-        })
+            return polyline, ifcPoints
 
-        outerCurve = polyline
+        outerCurve, points = make_polyline_adaptive(wire_outerCurve, surfaceShape)
+        innerCurves = [make_polyline_adaptive(wire_innerCurve, surfaceShape) for wire_innerCurve in wire_innerCurves]
+        innerPointsList = [innerCurve[1] for innerCurve in innerCurves]
+        innerCurves = [innerCurve[0] for innerCurve in innerCurves]
 
         # Create plane
         plane = model.create_entity("IfcPlane", **{
@@ -189,14 +181,24 @@ class PlanarMember(PhysicalMember):
             }),
         })
 
-        # TODO: Add inner boundaries
         # https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcCurveBoundedPlane.htm
         surface = model.create_entity("IfcCurveBoundedPlane", **{
             "BasisSurface": plane,
             "OuterBoundary": outerCurve,
-            # "InnerBoundaries": innerCurves,
-            "InnerBoundaries": [],
+            "InnerBoundaries": innerCurves,
         })
+
+        innerFaceBounds = []
+        for innerPoints in innerPointsList:
+            polyloop = model.create_entity("IfcPolyLoop", **{  
+                "Polygon": innerPoints,
+            })
+
+            facebound = model.create_entity("IfcFaceBound", **{
+                "Bound": polyloop,
+                "Orientation": True,
+            })
+            innerFaceBounds.append(facebound)
 
         polyloop = model.create_entity("IfcPolyLoop", **{  
             "Polygon": points,
@@ -208,7 +210,7 @@ class PlanarMember(PhysicalMember):
         })
 
         faceSurface =  model.create_entity("IfcFaceSurface", **{
-            "Bounds": [facebound],
+            "Bounds": [facebound, *innerFaceBounds],
             "FaceSurface": surface,
             "SameSense": True,
            })
