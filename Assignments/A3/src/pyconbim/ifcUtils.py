@@ -24,6 +24,11 @@ class ModelData:
     def __init__(self, model) -> None:
         self.model = model
 
+        # Preprocessing data
+        self.GUIDS_ignore = set()
+        self.GUIDS_enlarge = dict()
+        self.GUIDS_foundation = set()
+
         shapeData, tree, unit_magnitude, unit_name = processGeometry(model)
 
         self.shapes = shapeData
@@ -38,6 +43,25 @@ class ModelData:
                 elements_bodies[GUID] = shapes['Body']
 
         self.obbs = geomUtils.get_elementsOBB(elements_bodies)
+    
+    def get_structuralMembers(self):
+        """ Get filtered structural members in model.
+        Returned elements are filtered with respect to preprocessing.
+        """
+        load_bearing = getLoadBearing(self.model)
+        load_bearing = {element.GlobalId for element in load_bearing}
+
+        elements = load_bearing
+
+        for GUID in self.GUIDS_foundation:
+            elements.add(GUID)
+
+        # Ignore should be done last
+        for GUID in self.GUIDS_ignore:
+            elements.remove(GUID)
+        
+        elements = {GUID: self.model.by_guid(GUID) for GUID in elements}
+        return elements
 
 
 def load_models(model_dir, models):

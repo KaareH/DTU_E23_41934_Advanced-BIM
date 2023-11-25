@@ -462,3 +462,10 @@ def adaptive_wire_to_polyline(wire: TopoDS_Wire, face: TopoDS_Face, min_num_samp
             polyline_points.append(pnt)
 
     return polyline_points
+
+def get_planeface(plane: gp_Pln) -> TopoDS_Face:
+    """Get a TopoDS_Face from a gp_Pln"""
+    
+    planeface = OCC.Core.BRepBuilderAPI.BRepBuilderAPI_MakeFace(plane).Shape()
+    return planeface
+

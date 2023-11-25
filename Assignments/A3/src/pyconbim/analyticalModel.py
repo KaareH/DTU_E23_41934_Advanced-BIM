@@ -9,6 +9,7 @@ members, and the conversion to idealized analytical members.
 
 from abc import ABC, abstractmethod
 from loguru import logger
+from collections import namedtuple
 import numpy as np
 
 import ifcopenshell
@@ -22,6 +23,8 @@ import pyconbim.geomUtils as geomUtils
 import pyconbim.rendering as rendering
 import pyconbim.utils as utils
 
+# TODO:Shared Object placement: https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcStructuralAnalysisModel.htm
+
 class Knot3D:
     def __init__(self) -> None:
         pass
@@ -32,6 +35,7 @@ class StructuralMember(ABC):
     def __init__(self, GUID) -> None:
         self.GUID = GUID
         self.nodes = []
+        self.ifcStructuralItem = None
 
 class PhysicalMember(StructuralMember, ABC):
     def __init__(self, GUID) -> None:
@@ -39,7 +43,7 @@ class PhysicalMember(StructuralMember, ABC):
     
     @abstractmethod
     def to_ifc_structuralMember(self, model):
-        pass
+        assert self.ifcStructuralItem is None
 
 class VirtualMember(StructuralMember):
     """Very stiff virtual member for connections"""
@@ -54,10 +58,25 @@ class VirtualMember(StructuralMember):
 class AxialMember(PhysicalMember):
     """Abstract class for axial members"""
 
-    def __init__(self, GUID, axis) -> None:
-        super().__init__(GUID)
-        assert geomUtils.is_wire_straight_line(axis)
-        self.axis = axis
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData.GUID)
+        # Axis from ifcopenshell might not even be inside the OBB of the element.
+        # Hence not usable at all.
+        
+        wire = geomUtils.convert_bnd_to_line(elementData.OBB, returnWire=True)
+        assert 'Axis' in elementData.keys
+
+        axis = elementData.shapes['Axis'].geometry
+
+        subShapes = geomUtils.get_subShapes(axis)
+        assert len(subShapes) == 1
+            
+        shape = subShapes[0]
+        assert geomUtils.is_wire_straight_line(shape)
+
+        self.axis = wire
+        assert geomUtils.is_wire_straight_line(self.axis)
+
 
     def to_ifc_structuralMember(self, model):
         """
@@ -116,10 +135,14 @@ class AxialMember(PhysicalMember):
 class PlanarMember(PhysicalMember):
     """Abstract class for planar members"""
 
-    def __init__(self, GUID, surface, plane) -> None:
-        super().__init__(GUID)
-        # Do assert here
-        self.surface = surface
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData.GUID)
+        plane = geomUtils.convert_bnd_to_plane(elementData.OBB)
+        planeface = geomUtils.get_planeface(plane)
+
+        commonSurface = geomUtils.find_solid_face_intersection(elementData.body, planeface)
+ 
+        self.surface = commonSurface
         self.plane = plane
 
     def to_ifc_structuralMember(self, model):
@@ -228,32 +251,34 @@ class PlanarMember(PhysicalMember):
         return surfaceMember
 
 class Beam(AxialMember):
-    def __init__(self, GUID, axis) -> None:
-        super().__init__(GUID, axis)
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData)
 
 class Column(AxialMember):
-    def __init__(self, GUID, axis) -> None:
-        super().__init__(GUID, axis)
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData)
 
 class Slab(PlanarMember):
-    def __init__(self, GUID, surface, plane) -> None:
-        super().__init__(GUID, surface, plane)
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData)
 
 class Wall(PlanarMember):
-    def __init__(self, GUID, surface, plane) -> None:
-        super().__init__(GUID, surface, plane)
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData)
 
 class Footing(PhysicalMember):
     """Footing. This is a special member, as it defines boundary conditions for the model"""
 
-    def __init__(self, GUID, body, pnt) -> None:
-        super().__init__(GUID)
-        self.body = body
-        self.pnt = pnt
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData.GUID)
+        self.body = elementData.body
+        self.pnt = elementData.OBB.Center()
 
     def to_ifc_structuralMember(self, model):
         super().to_ifc_structuralMember(model)
         pass
+
+ElementData = namedtuple('ElementData', ['GUID', 'element', 'shapes', 'keys', 'OBB', 'body'])
 
 class AnalyticalModel:
     """
@@ -313,6 +338,52 @@ class AnalyticalModel:
                     products=surfaceMembers, group=analysisModel)
 
         return analysisModel
+    
+    def add_elements(self, elements, modelData):
+        """Add structural members from elements"""
+
+        elementFunctions = {
+            "IfcBeam": Beam,
+            "IfcColumn": Column,
+            "IfcSlab": Slab,
+            "IfcWall": Wall,
+            "IfcFooting": Footing,
+        }
+
+        model = modelData.model
+        addCount = 0
+        for GUID in elements:
+            shapes = modelData.shapes[GUID]
+            keys = shapes.keys()
+            element = modelData.model.by_guid(GUID)
+            
+            assert 'Body' in keys
+            OBB = modelData.obbs[GUID]
+            body = shapes['Body'].geometry
+
+            
+            # Assert that an element doesn't have both Axis and FootPrint
+            assert not ('Axis' in keys and 'FootPrint' in keys)
+
+            elementData = ElementData(
+                GUID = GUID,
+                element = element,
+                shapes = shapes,
+                keys = keys,
+                OBB = OBB,
+                body = body,
+            )
+
+            IfcClass = element.is_a()
+
+            if IfcClass in elementFunctions.keys():
+                member = elementFunctions[IfcClass](elementData)
+                self.addMember(member)
+                addCount += 1
+            else:
+                logger.warning(f"Function for {IfcClass} not implemented! Skipping element...")
+        
+        logger.info(f"Added {addCount}/{len(elements)} members to analytical model.")
                 
 class KeyGenerator:
     def __init__(self):

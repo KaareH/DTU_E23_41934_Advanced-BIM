@@ -20,7 +20,8 @@ import json
 from loguru import logger
 import ifcopenshell
 
-def alter_loadBearing(mark_loadBearing, model):
+def alter_loadBearing(mark_loadBearing, modelData):
+    model = modelData.model
     for alter in mark_loadBearing:
         GUID = alter['GUID']
         loadBearing = alter['loadBearing']
@@ -39,30 +40,66 @@ def alter_loadBearing(mark_loadBearing, model):
         )
     logger.info(f"Marked {len(mark_loadBearing)} elements as load-bearing.")
     
-def ignoreElement(correction, model):
-    pass
-    # print(f"Ignored {len(ignore_elements)} elements.")
+def ignoreElement(ignore_element, modelData):
+    GUIDS_ignore = set()
+    for ignore in ignore_element:
+        GUID = ignore['GUID']
+        if ignore['ignore']:
+            GUIDS_ignore.add(GUID)
 
-def enlarge_OBB(correction, model):
-    pass
+    modelData.GUIDS_ignore = GUIDS_ignore
+    logger.info(f"Ignored {len(GUIDS_ignore)} elements.")
 
-def preProcessModel(model):
+def enlarge_OBB(enlarge_OBB, modelData):
+    model = modelData.model
+    GUIDS_enlarge = dict()
+    for enlarge in enlarge_OBB['by_type']:
+        TYPE_GUID = enlarge['GUID']
+        elementType = model.by_guid(TYPE_GUID)
+        elements = ifcopenshell.util.element.get_types(elementType)
+        for element in elements:
+            GUIDS_enlarge[element.GlobalId] = enlarge['enlarge']
+    
+    modelData.GUIDS_enlarge = GUIDS_enlarge
+    logger.info(f"{len(GUIDS_enlarge)} elements marked for additional OBB enlargement.")
+
+def mark_foundation(mark_foundation, modelData):
+    model = modelData.model
+    GUIDS_foundation = dict()
+    for mark in mark_foundation['by_type']:
+        TYPE_GUID = mark['GUID']
+        elementType = model.by_guid(TYPE_GUID)
+        elements = ifcopenshell.util.element.get_types(elementType)
+        # Only marks as foundation if true. Doesn't unmark.
+        if mark['foundation']:
+            for element in elements:
+                GUIDS_foundation.add(element.GlobalId)
+
+    # TODO: Implement by_keyword
+    # for mark in mark_foundation['by_keyword']:
+        # pass
+
+    modelData.GUIDS_foundation = GUIDS_foundation
+    logger.info(f"Marked {len(GUIDS_foundation)} elements as foundation.")
+
+def preProcessModel(modelData, filepath):
     logger.info("Preprocessing model...")
  
     # Opening JSON file
-    f = open ('./input/LLYN-corrections.json', "r")
+    f = open (filepath, "r")
     data = json.loads(f.read())
 
     correctionFunctions = {
         "alter_loadBearing": alter_loadBearing,
         "ignoreElement": ignoreElement,
         "enlarge_OBB": enlarge_OBB,
+        "mark_foundation": mark_foundation,
     }
 
     corrections = data['corrections']
     for key, correction in corrections.items():
         if key in correctionFunctions:
-            correctionFunctions[key](correction, model)
+            correctionFunctions[key](correction, modelData)
         else:
             logger.warning(f"Unknown correction: {key}")
 
