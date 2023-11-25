@@ -23,6 +23,8 @@ import pyconbim.geomUtils as geomUtils
 import pyconbim.rendering as rendering
 import pyconbim.utils as utils
 
+from OCC.Core.gp import gp_Pnt
+
 # TODO:Shared Object placement: https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcStructuralAnalysisModel.htm
 
 class Knot3D:
@@ -38,8 +40,9 @@ class StructuralMember(ABC):
         self.ifcStructuralItem = None
 
 class PhysicalMember(StructuralMember, ABC):
-    def __init__(self, GUID) -> None:
+    def __init__(self, GUID, OBB) -> None:
         super().__init__(GUID)
+        self.OBB = OBB
     
     @abstractmethod
     def to_ifc_structuralMember(self, model):
@@ -59,7 +62,7 @@ class AxialMember(PhysicalMember):
     """Abstract class for axial members"""
 
     def __init__(self, elementData) -> None:
-        super().__init__(elementData.GUID)
+        super().__init__(elementData.GUID, elementData.OBB)
         # Axis from ifcopenshell might not even be inside the OBB of the element.
         # Hence not usable at all.
         
@@ -136,7 +139,7 @@ class PlanarMember(PhysicalMember):
     """Abstract class for planar members"""
 
     def __init__(self, elementData) -> None:
-        super().__init__(elementData.GUID)
+        super().__init__(elementData.GUID, elementData.OBB)
         plane = geomUtils.convert_bnd_to_plane(elementData.OBB)
         planeface = geomUtils.get_planeface(plane)
 
@@ -270,9 +273,10 @@ class Footing(PhysicalMember):
     """Footing. This is a special member, as it defines boundary conditions for the model"""
 
     def __init__(self, elementData) -> None:
-        super().__init__(elementData.GUID)
+        super().__init__(elementData.GUID, elementData.OBB)
         self.body = elementData.body
-        self.pnt = elementData.OBB.Center()
+        self.pnt = gp_Pnt(elementData.OBB.Center())
+        logger.warning(self.pnt)
 
     def to_ifc_structuralMember(self, model):
         super().to_ifc_structuralMember(model)
@@ -360,7 +364,6 @@ class AnalyticalModel:
             assert 'Body' in keys
             OBB = modelData.obbs[GUID]
             body = shapes['Body'].geometry
-
             
             # Assert that an element doesn't have both Axis and FootPrint
             assert not ('Axis' in keys and 'FootPrint' in keys)
@@ -385,6 +388,96 @@ class AnalyticalModel:
         
         logger.info(f"Added {addCount}/{len(elements)} members to analytical model.")
                 
+    def solve_connection_axial_axial(self, member1: AxialMember, member2: AxialMember) -> VirtualMember:
+        """Solve connection between two axial members"""
+        wire1 = member1.axis
+        wire2 = member2.axis
+
+        p1, p2 = geomUtils.find_closest_points(wire1, wire2)
+        virtualMember = make_virtual_member(member1.GUID, member2.GUID, p1, p2)
+        return virtualMember
+
+    def solve_connection_axial_planar(self, axialMember: AxialMember, planarMember: PlanarMember) -> VirtualMember:
+        """Solve connection between axial and planar member"""
+        axis = axialMember.axis
+        planarSurface = planarMember.surface
+
+        p1, p2 = geomUtils.find_closest_points(axis, planarSurface)
+
+        virtualMember = make_virtual_member(axialMember.GUID, planarMember.GUID, p1, p2)
+        return virtualMember
+
+    def solve_connection_planar_planar(self, member1: PlanarMember, member2: PlanarMember) -> VirtualMember:
+        """Solve connection between two planar members"""
+        return None
+    
+    def solve_connections(self) -> None:
+        """Solve connections between members"""
+        
+        logger.info("Solving connections...")
+        physicalMembers = {key: member for key, member in self.members.items() if isinstance(member, PhysicalMember)}
+        OBBs = {GUID: member.OBB for GUID, member in physicalMembers.items()}
+
+        _, element_collisions = geomUtils.find_collisions(OBBs)
+        collision_pairs = find_collisions_pairs(element_collisions)
+        logger.debug(f"Collision pairs: {len(collision_pairs)}")
+
+        for collision in collision_pairs:
+            key1 = collision[0]
+            key2 = collision[1]
+
+            member1 = self.members[key1]
+            member2 = self.members[key2]
+
+            virtualMember = None
+            if isinstance(member1, AxialMember) and isinstance(member2, AxialMember):
+                virtualMember = self.solve_connection_axial_axial(member1, member2)
+            
+            elif isinstance(member1, PlanarMember) and isinstance(member2, PlanarMember):
+                virtualMember = self.solve_connection_planar_planar(member1, member2)
+            
+            elif ((isinstance(member1, AxialMember) and isinstance(member2, PlanarMember))
+                  or
+                  (isinstance(member2, AxialMember) and isinstance(member1, PlanarMember))):
+                if isinstance(member1, PlanarMember):
+                    axialMember = member2
+                    planarMember = member1
+                else:
+                    axialMember = member1
+                    planarMember = member2
+                virtualMember = self.solve_connection_axial_planar(axialMember, planarMember)
+                
+            elif (isinstance(member1, AxialMember) and isinstance(member2, Footing)
+                or
+                isinstance(member2, AxialMember) and isinstance(member1, Footing)):
+                if isinstance(member1, Footing):
+                    footing = member1
+                    axialMember = member2
+                else:
+                    footing = member2
+                    axialMember = member1
+                
+                axis = axialMember.axis
+
+                # print(footing.pnt)
+                # pnt = gp_Pnt(footing.pnt)
+
+                p1, p2 = geomUtils.find_closest_points(axis, footing.body)
+                virtualMember = make_virtual_member(key1, key2, p1, p2)
+
+                # Assuming p1 is on the footing
+                footing.pnt = p1
+
+                if virtualMember == None:
+                    continue
+            else:
+                logger.warning(f"Unknown connection between {type(member1)} and {type(member2)}")
+                continue
+
+            if virtualMember == None:
+                continue
+            self.addMember(virtualMember)
+
 class KeyGenerator:
     def __init__(self):
         self.keys = dict()
@@ -415,4 +508,19 @@ def make_virtual_member(key1, key2, p1, p2):
     key = ('Virt', key1, key2)
     member = VirtualMember(key=key, axis=wire, member1=key1, member2=key2)
     return member
+
+def find_collisions_pairs(element_collisions):
+    """Find collision pairs from element collisions.
+
+    Collision pairs are defined as a tuple of two sorted GUIDs - hence
+    (A, B) will exist, but not (B, A).
+    """
+    collision_pairs = set()
+
+    for key, collisions in element_collisions.items():
+        for collision in collisions:
+            this_key = tuple(sorted([key, collision]))
+            collision_pairs.add(this_key)
+    
+    return collision_pairs
 
