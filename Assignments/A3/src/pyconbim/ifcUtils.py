@@ -9,6 +9,7 @@ Utilities for working with IFC-models.
 import os
 import sys
 import multiprocessing
+from loguru import logger
 from deprecated.sphinx import deprecated
 
 import ifcopenshell
@@ -48,9 +49,9 @@ def load_models(model_dir, models):
 
     models = dict()
     for key, model_path in model_paths.items():
-        print(f"File path, {key}: {model_path}")
+        logger.info(f"File path, {key}: {model_path}")
         model = ifcopenshell.open(model_path)
-        print(f"Model schema: {model.schema}\n")
+        logger.info(f"Model schema: {model.schema}\n")
         models[key] = model
     
     return models
@@ -63,8 +64,8 @@ def getLoadBearing(model):
 
     unique_types = set(el.get_info()['type'] for el in load_bearing)
 
-    print(f"Number of load-bearing elements: {len(load_bearing)}")
-    print(f"Unique types of loadbearing elements:\n {unique_types}")
+    logger.info(f"Number of load-bearing elements: {len(load_bearing)}")
+    logger.info(f"Unique types of loadbearing elements:\n {unique_types}")
 
     return load_bearing
 
@@ -91,7 +92,7 @@ def processGeometry(model):
     tree = ifcopenshell.geom.tree()
     iterator = ifcopenshell.geom.iterator(settings, model, CORE_COUNT)
 
-    print(f"Beginning processing with {CORE_COUNT} threads...")
+    logger.info(f"Beginning processing with {CORE_COUNT} threads...")
     contexts = set()
     shapeData = dict()
 
@@ -102,7 +103,7 @@ def processGeometry(model):
             totalCount += 1
             if i % 500 == 0:
                 i = 0
-                print(f"Progress: {iterator.progress()}%")
+                logger.info(f"Progress: {iterator.progress()}%")
             i += 1
             
             tree.add_element(iterator.get_native())
@@ -123,10 +124,10 @@ def processGeometry(model):
             shapeData[GUID][CONTEXT] = shape
 
             if not iterator.next():
-                print(f"Processed {totalCount} items")
+                logger.info(f"Processed {totalCount} items")
                 break
 
-    print(f"Contexts: {contexts}")
+    logger.info(f"Contexts: {contexts}")
 
     unit_magnitude = iterator.unit_magnitude()
     unit_name = iterator.unit_name()
@@ -198,6 +199,6 @@ def writeToFile(model, fileName, directory="./output"):
         fileName = fileName.join(".ifc")
 
     filePath = os.path.join(directory, fileName)
-    print(f"Writing to {filePath}...")
+    logger.info(f"Writing to {filePath}...")
     model.write(filePath)
-    print("Done")
+    logger.info("Done")

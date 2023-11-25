@@ -29,7 +29,7 @@ def alter_loadBearing(mark_loadBearing, model):
         ifc_pset_common = 'Pset_' +  (str(element.is_a()).replace('Ifc','')) + 'Common'
 
         pset_common = ifcopenshell.api.run("pset.add_pset", model, product=element, name=ifc_pset_common)
-        print(pset_common)
+        logger.debug(pset_common)
 
         ifcopenshell.api.run(
             "pset.edit_pset",
@@ -37,7 +37,7 @@ def alter_loadBearing(mark_loadBearing, model):
             pset=pset_common,
             properties={"LoadBearing": loadBearing},
         )
-    print(f"Marked {len(mark_loadBearing)} elements as load-bearing.")
+    logger.info(f"Marked {len(mark_loadBearing)} elements as load-bearing.")
     
 def ignoreElement(correction, model):
     pass
@@ -64,7 +64,7 @@ def preProcessModel(model):
         if key in correctionFunctions:
             correctionFunctions[key](correction, model)
         else:
-            print(f"Unknown correction: {key}")
+            logger.warning(f"Unknown correction: {key}")
 
     # Float beams på tag
     # TypeName: Rectangular and Square Hollow Sections:SB10

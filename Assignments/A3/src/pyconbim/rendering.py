@@ -7,6 +7,7 @@ This module contains helper functions for rendering using OpenCascade's OCCViewe
 """
 
 from deprecated.sphinx import deprecated
+from loguru import logger
 import ifcopenshell.util
 
 from OCC.Display.SimpleGui import init_display
@@ -97,7 +98,7 @@ def RenderInWindow(renderFunc, window_size=(1500, 1000), **args):
         renderFunc(occ_display, **args)
 
     except Exception as e:
-        print(f"Exception!: {e}")
+        logger.exception(f"Exception!: {e}")
 
     finally:
         start_display()
@@ -117,7 +118,7 @@ def SimpleRenderFunc(renderer, **args):
             )
 
         except Exception as e:
-                print(f"Error! {e}")
+                logger.exception(f"Error! {e}")
 
     renderer.FitAll()
 
@@ -157,7 +158,7 @@ def ElementsRenderFunc(renderer, **args):
                 )
 
         except Exception as e:
-                print(f"Error! {e}")
+                logger.exception(f"Error! {e}")
 
     renderer.FitAll()
 
@@ -184,7 +185,7 @@ def RenderStructuralMembersFunc(renderer, **args):
         aModel = args['analyticalModel']
         members = aModel.members
     except Exception as e:
-        print(f"Error! {e}")
+        logger.exception(f"Error! {e}")
         return
     
     try:
@@ -341,7 +342,7 @@ def RenderStructuralMembersFunc(renderer, **args):
                         transparency=transparency,
                     )
             except Exception as e:
-                print(e)
+                logger.exception(e)
 
     #############################
     # Render structural members #
@@ -370,7 +371,7 @@ def RenderStructuralMembersFunc(renderer, **args):
                 pass
 
         except Exception as e:
-                print(f"Error! {e}")
+                logger.exception(f"Error! {e}")
                 
 
     renderer.FitAll()

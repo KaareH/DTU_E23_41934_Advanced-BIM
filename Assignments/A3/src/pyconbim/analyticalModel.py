@@ -8,6 +8,7 @@ members, and the conversion to idealized analytical members.
 """
 
 from abc import ABC, abstractmethod
+from loguru import logger
 import numpy as np
 
 import ifcopenshell
@@ -301,8 +302,8 @@ class AnalyticalModel:
                 pass
                 #raise TypeError(f"Unknown member type: {type(member)}")
         
-        print("Curve members:", len(curveMembers))
-        print("Surface members:", len(surfaceMembers))
+        logger.info(f"Curve members: {len(curveMembers)}")
+        logger.info(f"Surface members: {len(surfaceMembers)}")
 
         # Assign to analysis model
         ifcopenshell.api.run("group.assign_group", model,
@@ -335,9 +336,9 @@ def make_virtual_member(key1, key2, p1, p2):
     try:
         wire = geomUtils.make_wire_from_points([p1, p2])
     except Exception as e:
-        print(e)
-        print(p1.Coord())
-        print(p2.Coord())
+        logger.exception(e)
+        logger.exception(p1.Coord())
+        logger.exception(p2.Coord())
         return None
     
     key = ('Virt', key1, key2)

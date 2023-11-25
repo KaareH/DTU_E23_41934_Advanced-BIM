@@ -6,6 +6,7 @@
 Misc. utilities for PyConBIM that does not fit in any other module.
 """
 import numpy as np
+from loguru import logger
 
 def sampleUtil():
     """Function for testing"""
@@ -17,7 +18,7 @@ def getElementsRender(guids, model):
         element = model.by_guid(guid)
         elements_render.append(element)
 
-    print(f"Length of list: {len(elements_render)}")
+    logger.debug(f"Length of list: {len(elements_render)}")
     return elements_render
 
 def getAffineTransformation(transformation) -> np.ndarray:

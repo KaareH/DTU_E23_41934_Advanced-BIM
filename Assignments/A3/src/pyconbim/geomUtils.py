@@ -7,6 +7,7 @@ This module contains a bunch of functions for working with OpenCascade geometry.
 """
 
 import numpy as np
+from loguru import logger
 
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Dir, gp_XYZ
@@ -350,7 +351,7 @@ def find_solid_face_intersection(shape, face: TopoDS_Face):
     if face_list:
         # assert len(face_list) == 1
         if len(face_list) != 1:
-            print(f"Warning: More than one face in result: {len(face_list)}")
+            logger.warning(f"Warning: More than one face in result: {len(face_list)}")
         return face_list[0]
     else:
         return None
@@ -432,7 +433,7 @@ def adaptive_wire_to_polyline(wire: TopoDS_Wire, face: TopoDS_Face, min_num_samp
 
         # Other
         else:
-            print("Other type!!!!!!!")
+            logger.warning("Other type!!!!!!!")
             num_samples = 10
             # assert False
 
