@@ -23,6 +23,17 @@
                 {"GUID": "16iVztvQvBdxi_mREc593p", "enlarge": 1.3},
                 {"GUID": "3cgthokUX8HuAcV5wVTtxB", "enlarge": 1.3}
             ]
+        },
+        "mark_foundation": {
+            "by_type": [
+                {"GUID": "0Qxf9VHnf7l8_v$jx5BtNO", "foundation": true},
+                {"GUID": "2hzCSWXcb4AwJbEoJMswr8", "foundation": true},
+                {"GUID": "3DSJKuRq91_f$JNwFPES2q", "foundation": true},
+                {"GUID": "1jLRC8MWH8yhQO3uVKRxIE", "foundation": true}
+            ]
+        },
+        "reassign_class": {
+
         }
     }
 }

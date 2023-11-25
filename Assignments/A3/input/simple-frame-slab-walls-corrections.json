@@ -1,0 +1,20 @@
+{
+    "model_fileName": "simple-frame-with-slab-holes.ifc",
+    "corrections": {
+        "alter_loadBearing": [
+        ],
+        "ignoreElement": [
+        ],
+        "enlarge_OBB": {
+            "by_type": [
+            ]
+        },
+        "mark_foundation": {
+            "by_type": [
+            ]
+        },
+        "reassign_class": {
+
+        }
+    }
+}
