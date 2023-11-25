@@ -15,4 +15,5 @@ __all__ = [
     "rendering",
     "pyniteinterface",
     "utils",
+    "modelPreprocessor",
 ]
