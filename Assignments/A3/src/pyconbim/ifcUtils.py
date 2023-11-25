@@ -1,8 +1,9 @@
-"""
-Ifc utilities
+# Kaare G. S. Hansen, s214282 - DTU
+# 41934 - Advanced BIM, E23
 
-Kaare G. S. Hansen, s214282 - DTU
-41934 - Advanced BIM, E23
+""" Ifc utilities.
+
+Utilities for working with IFC-models.
 """
 
 import os

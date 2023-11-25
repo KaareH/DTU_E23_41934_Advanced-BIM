@@ -1,8 +1,9 @@
-"""
-Rendering functions
+# Kaare G. S. Hansen, s214282 - DTU
+# 41934 - Advanced BIM, E23
 
-Kaare G. S. Hansen, s214282 - DTU
-41934 - Advanced BIM, E23
+""" Rendering functions.
+
+This module contains helper functions for rendering using OpenCascade's OCCViewer.
 """
 
 from deprecated.sphinx import deprecated

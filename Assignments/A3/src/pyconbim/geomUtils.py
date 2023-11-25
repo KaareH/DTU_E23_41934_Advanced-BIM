@@ -1,8 +1,9 @@
-"""
-Geometric utilities
+# Kaare G. S. Hansen, s214282 - DTU
+# 41934 - Advanced BIM, E23
 
-Kaare G. S. Hansen, s214282 - DTU
-41934 - Advanced BIM, E23
+""" Geometric utilities.
+
+This module contains a bunch of functions for working with OpenCascade geometry.
 """
 
 import numpy as np

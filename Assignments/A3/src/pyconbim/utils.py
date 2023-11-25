@@ -1,10 +1,10 @@
-"""
-Misc. utilities
+# Kaare G. S. Hansen, s214282 - DTU
+# 41934 - Advanced BIM, E23
 
-Kaare G. S. Hansen, s214282 - DTU
-41934 - Advanced BIM, E23
-"""
+""" Misc. utilities.
 
+Misc. utilities for PyConBIM that does not fit in any other module.
+"""
 import numpy as np
 
 def sampleUtil():

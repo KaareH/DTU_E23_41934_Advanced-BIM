@@ -1,5 +1,8 @@
+# Kaare G. S. Hansen, s214282 - DTU
+# 41934 - Advanced BIM, E23
+
 """
-PyConBim - Automated structural analysis of IFC models
+PyConBIM - Automated structural analysis of IFC models
 
 Kaare G. S. Hansen, s214282 - DTU
 41934 - Advanced BIM, E23

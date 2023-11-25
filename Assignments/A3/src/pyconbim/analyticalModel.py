@@ -1,8 +1,10 @@
-"""
-AnalyticalModel
+# Kaare G. S. Hansen, s214282 - DTU
+# 41934 - Advanced BIM, E23
 
-Kaare G. S. Hansen, s214282 - DTU
-41934 - Advanced BIM, E23
+""" AnalyticalModel.
+
+This module acts as a middleman for interportation of actual geometry of
+members, and the conversion to idealized analytical members.
 """
 
 from abc import ABC, abstractmethod
