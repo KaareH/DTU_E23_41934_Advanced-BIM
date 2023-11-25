@@ -21,6 +21,7 @@ dependencies:
   - pyside2
   - scipy
   - deprecated
+  - loguru
   - pillow
   - pytest
   - flake8

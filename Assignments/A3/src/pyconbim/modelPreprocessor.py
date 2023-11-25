@@ -17,6 +17,7 @@ Corections include:
 """
 
 import json
+from loguru import logger
 import ifcopenshell
 
 def alter_loadBearing(mark_loadBearing, model):
@@ -46,7 +47,7 @@ def enlarge_OBB(correction, model):
     pass
 
 def preProcessModel(model):
-    print("Preprocessing model...")
+    logger.info("Preprocessing model...")
  
     # Opening JSON file
     f = open ('./input/LLYN-corrections.json', "r")
@@ -77,4 +78,4 @@ def preProcessModel(model):
     # Søg på foundation, fundament i Pset_ReinforcementBarPitchOfWall
     # BrøndFundament er ikke markeret loadBearing
 
-    print("Preprocessing model finished.")
+    logger.info("Preprocessing model finished.")
