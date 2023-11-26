@@ -490,7 +490,8 @@ def find_face_face_intersection(face1: TopoDS_Face | gp_Pln, face2: TopoDS_Face 
         shape = section_algo.Shape()
         subshapes = get_subShapes(shape)
         if len(subshapes) == 0: return None
-        assert len(subshapes) == 1
+        # assert len(subshapes) == 1
+        if len(subshapes) != 1: logger.warning("Warning: More than one subshape in result: {len(subshapes)}")
         try:
             edge = topods.Edge(subshapes[0])
             wire_builder = BRepBuilderAPI_MakeWire(edge)
