@@ -25,9 +25,13 @@ from OCC.Core.AIS import AIS_Line
 from OCC.Core.Bnd import Bnd_OBB
 from OCC.Core.BRepBndLib import brepbndlib
 from OCC.Core.AIS import AIS_InteractiveContext
-from OCC.Core.AIS import AIS_Shape
+from OCC.Core.AIS import AIS_Shape, AIS_Point
 from OCC.Core.AIS import AIS_TextLabel
 from OCC.Core.TCollection import TCollection_AsciiString, TCollection_ExtendedString
+from OCC.Core.TopoDS import TopoDS_Vertex, TopoDS_Edge, TopoDS_Wire
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
+from OCC.Core.Prs3d import Prs3d_PointAspect, Prs3d_Drawer
+from OCC.Core.Aspect import Aspect_TOM_O
 import OCC.Core.BRepPrimAPI
 import OCC.Core.BRepTools
 
@@ -48,6 +52,7 @@ PURPLE = Quantity_Color(0.5, 0.0, 0.5, Quantity_TOC_RGB)
 
 DEBUG_SHAPE = namedtuple('DEBUG_SHAPE', ['shape', 'color', 'transparency'])
 DEBUG_RENDERER_ENABLED = True
+DEBUG_SIZE = 10.0
 debug_shapes = list()
 
 def addDebugShape(shape, color=ORANGE, transparency=0.5):
@@ -65,17 +70,34 @@ def debugRenderFunc(renderer, **args):
     global debug_shapes
 
     logger.debug(f"Rendering {len(debug_shapes)} debug shapes")
+    ais_context = renderer.GetContext()
 
     for i, debug_shape in enumerate(debug_shapes):
         to_update = i % 50 == 0
+        shape = debug_shape.shape
 
         try:
-            renderer.DisplayShape(
-                debug_shape.shape,
-                color=debug_shape.color,
-                transparency=debug_shape.transparency,
-                update=to_update,
-            )
+            if type(shape) in [gp_Pnt]:
+                shape = Geom_CartesianPoint(shape)
+
+                ais_point = AIS_Point(shape)
+                
+                pntAspct = Prs3d_PointAspect(Aspect_TOM_O,debug_shape.color, DEBUG_SIZE)
+                
+                drawer = ais_point.Attributes()
+                drawer.SetPointAspect(pntAspct)
+                ais_point.SetAttributes(drawer)
+                ais_point.SetWidth(DEBUG_SIZE)
+
+                ais_context.Display(ais_point, False)
+            else:
+                [ais] = renderer.DisplayShape(
+                    debug_shape.shape,
+                    color=debug_shape.color,
+                    transparency=debug_shape.transparency,
+                    update=to_update,
+                )
+                ais.SetWidth(DEBUG_SIZE)
 
         except Exception as e:
                 logger.exception(f"Error! {e}")
