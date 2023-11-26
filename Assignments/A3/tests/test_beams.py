@@ -8,7 +8,7 @@ import pytest
 from pyconbim.ifcUtils import load_models, ModelData
 from pyconbim.geomUtils import (get_subShapes, is_wire_straight_line,
     convert_bnd_to_line, get_wire_endpoints, distance_between_points)
-from pyconbim.analyticalModel import Beam
+from pyconbim.analyticalModel import Beam, ElementData
 
 def test_beam_length():
     models = load_models(model_dir="./models",
@@ -40,7 +40,16 @@ def test_beam_length():
     assert is_wire_straight_line(shape)
     wire = convert_bnd_to_line(obb, returnWire=True)
 
-    member = Beam(GUID, wire)
+    elementData = ElementData(
+                GUID = GUID,
+                element = beam,
+                shapes = shapes,
+                keys = keys,
+                OBB = obb,
+                body = shapes['Body'].geometry,
+            )
+
+    member = Beam(elementData)
 
     wire = member.axis
     p1, p2 = get_wire_endpoints(wire)
