@@ -8,6 +8,7 @@ This module contains a bunch of functions for working with OpenCascade geometry.
 
 import numpy as np
 from loguru import logger
+import pyconbim.rendering as rendering
 
 from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCC.Core.gp import gp_Pnt, gp_Ax2, gp_Dir, gp_XYZ
@@ -47,7 +48,7 @@ from OCC.Core.TopAbs import TopAbs_EDGE, TopAbs_WIRE, TopAbs_FACE
 from OCC.Core.BRepAdaptor import BRepAdaptor_Curve
 from OCC.Core.TopoDS import topods, TopoDS_Face, TopoDS_Shape
 from OCC.Core.gp import gp_Pnt
-from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Common
+from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Common, BRepAlgoAPI_Section
 from OCC.Core.TopoDS import topods
 from OCC.Core.TopoDS import TopoDS_Compound, TopoDS_Builder
 from OCC.Core.gp import gp_Trsf, gp_Mat
@@ -469,3 +470,34 @@ def get_planeface(plane: gp_Pln) -> TopoDS_Face:
     planeface = OCC.Core.BRepBuilderAPI.BRepBuilderAPI_MakeFace(plane).Shape()
     return planeface
 
+def find_face_face_intersection(face1: TopoDS_Face | gp_Pln, face2: TopoDS_Face | gp_Pln) -> TopoDS_Wire | None:
+    """Find the intersection between two faces.
+
+    If a gp_Pln is given, it will be converted to a unbounded TopoDS_Face. 
+    
+    :return: A TopoDS_Wire if intersection is found or None.
+    """
+
+    if isinstance(face1, gp_Pln):
+        face1 = get_planeface(face1)
+    if isinstance(face2, gp_Pln):
+        face2 = get_planeface(face2)
+
+    section_algo = BRepAlgoAPI_Section(face1, face2)
+    section_algo.Build()
+
+    if section_algo.IsDone():
+        shape = section_algo.Shape()
+        subshapes = get_subShapes(shape)
+        if len(subshapes) == 0: return None
+        assert len(subshapes) == 1
+        try:
+            edge = topods.Edge(subshapes[0])
+            wire_builder = BRepBuilderAPI_MakeWire(edge)
+            if wire_builder.IsDone():
+                wire = wire_builder.Wire()
+                return wire
+        except Exception as e:
+            logger.exception(f"Could not make wire. Exception: {e}")
+    return None
+    
