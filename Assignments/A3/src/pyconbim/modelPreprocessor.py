@@ -65,7 +65,7 @@ def enlarge_OBB(enlarge_OBB, modelData):
 
 def mark_foundation(mark_foundation, modelData):
     model = modelData.model
-    GUIDS_foundation = dict()
+    GUIDS_foundation = set()
     for mark in mark_foundation['by_type']:
         TYPE_GUID = mark['GUID']
         elementType = model.by_guid(TYPE_GUID)
