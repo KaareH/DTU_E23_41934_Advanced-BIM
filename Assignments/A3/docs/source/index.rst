@@ -13,6 +13,7 @@ Welcome to PyConBIM's documentation!
    Home <self>
    installation
    A3
+   notebooks
    pyconbim
 
 

@@ -26,6 +26,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'nbsphinx',
     ]
 
 autosummary_generate = True

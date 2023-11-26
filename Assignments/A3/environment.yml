@@ -22,10 +22,13 @@ dependencies:
   - scipy
   - deprecated
   - loguru
+  - click
   - pillow
   - pytest
   - flake8
   - sphinx
+  - nbsphinx
+  - pandoc
   - pip:
     - PyniteFEA
     - sphinx-press-theme

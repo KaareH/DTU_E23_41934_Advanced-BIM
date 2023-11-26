@@ -6,6 +6,8 @@ dependencies:
   - pip
   - python=3.11
   - sphinx
+  - nbsphinx
+  - pandoc
   - pip:
     - sphinx-press-theme
     - sphinx-book-theme
