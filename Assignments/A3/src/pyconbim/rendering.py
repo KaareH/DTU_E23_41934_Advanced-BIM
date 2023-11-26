@@ -157,7 +157,12 @@ def RenderInWindow(renderFunc, window_size=(1500, 1000), **args):
 
     try:
         # Do the rendering
-        renderFunc(occ_display, **args)
+        if type(renderFunc) == list:
+            for f in renderFunc:
+                f(occ_display, **args)
+        else:
+            renderFunc(occ_display, **args)
+        
         debugRenderFunc(occ_display, **args)
 
     except Exception as e:
