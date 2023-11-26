@@ -159,15 +159,16 @@ class AxialMember(PhysicalMember):
         # Hence not usable at all.
         
         wire = geomUtils.convert_bnd_to_line(elementData.OBB, returnWire=True)
-        assert 'Axis' in elementData.keys
 
-        axis = elementData.shapes['Axis'].geometry
+        # assert 'Axis' in elementData.keys
 
-        subShapes = geomUtils.get_subShapes(axis)
-        assert len(subShapes) == 1
+        # axis = elementData.shapes['Axis'].geometry
+
+        # subShapes = geomUtils.get_subShapes(axis)
+        # assert len(subShapes) == 1
             
-        shape = subShapes[0]
-        assert geomUtils.is_wire_straight_line(shape)
+        # shape = subShapes[0]
+        # assert geomUtils.is_wire_straight_line(shape)
 
         self.axis = wire
         assert geomUtils.is_wire_straight_line(self.axis)
@@ -518,8 +519,9 @@ class AnalyticalModel:
 
         p1, p2 = geomUtils.find_closest_points(axis, planarSurface)
 
-        virtualMember = make_virtual_member(axialMember.GUID, planarMember.GUID, p1, p2)
-        return virtualMember
+        # virtualMember = make_virtual_member(axialMember.GUID, planarMember.GUID, p1, p2)
+        # return virtualMember
+        return None
 
     def solve_connection_planar_planar(self, member1: PlanarMember, member2: PlanarMember) -> VirtualMember | None:
         """Solve connection between two planar members"""
@@ -542,13 +544,13 @@ class AnalyticalModel:
         #     rendering.addDebugShape(int4)
         #     print("###########################")
 
-        int1 = geomUtils.find_face_face_intersection(member1.surface, member2.plane)
-        int2 = geomUtils.find_face_face_intersection(member1.plane, member2.surface)
-        int3 = geomUtils.find_face_face_intersection(member1.plane, member2.plane)
+        # int1 = geomUtils.find_face_face_intersection(member1.surface, member2.plane)
+        # int2 = geomUtils.find_face_face_intersection(member1.plane, member2.surface)
+        # int3 = geomUtils.find_face_face_intersection(member1.plane, member2.plane)
 
-        if int1: rendering.addDebugShape(int1)
-        if int2: rendering.addDebugShape(int2)
-        if int3: rendering.addDebugShape(int3)
+        # if int1: rendering.addDebugShape(int1)
+        # if int2: rendering.addDebugShape(int2)
+        # if int3: rendering.addDebugShape(int3)
 
         return None
         ########
@@ -619,7 +621,8 @@ class AnalyticalModel:
                 continue
             self.addMember(virtualMember)
 
-    def get_nodes(self):
+    def get_nodes(self) -> dict:
+        """Get all point nodes in model for members."""
         nodes = dict()
         for member in self.members.values():
             member_nodes = member.get_nodes()
@@ -647,6 +650,10 @@ class AnalyticalModel:
         logger.debug(f"Merged {len(nodes)} to {len(self.get_nodes())} nodes...")
 
 class KeyGenerator:
+    """Generate unique keys.
+    
+    Used for node keys.
+    """
     def __init__(self):
         self.keys = dict()
         self.counter = 0
