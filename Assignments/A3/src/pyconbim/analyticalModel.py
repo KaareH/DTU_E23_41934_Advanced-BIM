@@ -44,7 +44,7 @@ class Knot3D(StructuralConnection):
         self.key = key
         self.point = point
         self.members = list()
-        self.constraint = None
+        self.boundaryCondition = None
 
         self.addMember(member)
 
@@ -98,13 +98,15 @@ class Knot3D(StructuralConnection):
 
         # TODO: add better boundary conditions
         if self.boundaryCondition == "Fixed":
-            boundaryNodeCondition = model.createIfcBoundaryNodeCondition(Name = "Fixed")
-            boundaryNodeCondition.TranslationStiffnessX = True
-            boundaryNodeCondition.TranslationStiffnessY = True
-            boundaryNodeCondition.TranslationStiffnessZ = True
-            boundaryNodeCondition.RotationalStiffnessX = True
-            boundaryNodeCondition.RotationalStiffnessY = True
-            boundaryNodeCondition.RotationalStiffnessZ = True
+            boundaryNodeCondition = model.create_entity("IfcBoundaryNodeCondition", **{
+                "Name": "Fixed",
+                "TranslationalStiffnessX": model.createIfcBoolean(True),
+                "TranslationalStiffnessY": model.createIfcBoolean(True),
+                "TranslationalStiffnessZ": model.createIfcBoolean(True),
+                "RotationalStiffnessX": model.createIfcBoolean(True),
+                "RotationalStiffnessY": model.createIfcBoolean(True),
+                "RotationalStiffnessZ": model.createIfcBoolean(True),
+            })
 
             pointConnection.AppliedCondition = boundaryNodeCondition
 
