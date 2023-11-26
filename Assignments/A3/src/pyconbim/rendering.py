@@ -8,6 +8,7 @@ This module contains helper functions for rendering using OpenCascade's OCCViewe
 
 from deprecated.sphinx import deprecated
 from loguru import logger
+from collections import namedtuple
 import ifcopenshell.util
 
 from OCC.Display.SimpleGui import init_display
@@ -42,6 +43,44 @@ MAGENTA = Quantity_Color(1.0, 0.0, 1.0, Quantity_TOC_RGB)
 BLACK = Quantity_Color(0.0, 0.0, 0.0, Quantity_TOC_RGB)
 GREY = Quantity_Color(0.5, 0.5, 0.5, Quantity_TOC_RGB)
 YELLOW = Quantity_Color(0.0, 1.0, 1.0, Quantity_TOC_RGB)
+ORANGE = Quantity_Color(1.0, 0.5, 0.0, Quantity_TOC_RGB)
+
+DEBUG_SHAPE = namedtuple('DEBUG_SHAPE', ['shape', 'color', 'transparency'])
+DEBUG_RENDERER_ENABLED = True
+debug_shapes = list()
+
+def addDebugShape(shape, color=ORANGE, transparency=0.5):
+    """Add a shape to be rendered in debugRenderFunc"""
+    debug_shapes.append(DEBUG_SHAPE(shape, color, transparency))
+
+def debugRenderFunc(renderer, **args):
+    """Render debug shapes.
+
+    Only renders if DEBUG_RENDERER_ENABLED is True.
+
+    Renders all shapes in the global variable debug_shapes.
+    """
+    if not DEBUG_RENDERER_ENABLED: return
+    global debug_shapes
+
+    logger.debug(f"Rendering {len(debug_shapes)} debug shapes")
+
+    for i, debug_shape in enumerate(debug_shapes):
+        to_update = i % 50 == 0
+
+        try:
+            renderer.DisplayShape(
+                debug_shape.shape,
+                color=debug_shape.color,
+                transparency=debug_shape.transparency,
+                update=to_update,
+            )
+
+        except Exception as e:
+                logger.exception(f"Error! {e}")
+
+    renderer.FitAll()
+    return
 
 def quickJupyterRender(elements_render, settings, my_renderer = None):
     """Interactive renderer in Jupyter notebook"""
@@ -96,6 +135,7 @@ def RenderInWindow(renderFunc, window_size=(1500, 1000), **args):
     try:
         # Do the rendering
         renderFunc(occ_display, **args)
+        debugRenderFunc(occ_display, **args)
 
     except Exception as e:
         logger.exception(f"Exception!: {e}")
