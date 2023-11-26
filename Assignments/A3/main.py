@@ -4,44 +4,61 @@ Kaare G. S. Hansen, s214282 - DTU
 """
 
 import sys
+import os
+import click
+import json
 import ifcopenshell
 import ifcopenshell.util.classification
 import ifcopenshell.util.schema
 from loguru import logger
 
-from pyconbim.geomUtils import *
-from pyconbim.ifcUtils import *
-from pyconbim.rendering import *
-from pyconbim.analyticalModel import *
-import pyconbim.utils
+import pyconbim.ifcUtils as ifcUtils
 
 import createIfcAnalyticalModel
 import doPyNiteFEA
 
-def runThis():
-    models = load_models(model_dir='./models',
-                     models={'simple-frame': 'simple-frame.ifc',
-                             'simple-frame-with-slab': 'simple-frame-with-slab.ifc',
-                             'simple-frame-with-slab-holes': 'simple-frame-with-slab-holes.ifc',
-                             'simple-frame-with-slab-wall': 'simple-frame-with-slab-wall.ifc',
-                             })
-    # model = models['simple-frame']
-    model = models['simple-frame-with-slab-wall']
-    
-    # models = load_models(model_dir="./models",
-    #                      models={
-    #                          'building': 'AC20-Institute-Var-2.ifc',
-    #                      })
-    # model = models['building']
+@click.group()
+def cli():
+    pass
 
-    # models = load_models(model_dir='./models',
-    #                      models={'stru': 'LLYN - STRU.ifc',
-    #                             #  'ark': 'LLYN - ARK.ifc',
-    #                          })
-    # model = models['stru']
+@cli.command()
+@click.argument('modeloption', nargs=1)
+def run(modeloption):
+    click.echo(f"Running {modeloption}")
+    # modeloption = modeloption.lower()
+
+    # Opening JSON file
+    f = open ('./input/config.json', "r")
+    config = json.loads(f.read())
+
+    # Check if model option is valid
+    modelOptions = [modelConf['name'] for modelConf in config['model-configurations']]
+    if modeloption not in modelOptions:
+        logger.error(f"Unknown model option {modeloption}")
+        logger.info(f"Available options: {modelOptions}")
+        exit(1)
+
+    # Get model configuration
+    index = modelOptions.index(modeloption)
+    modelConf = config['model-configurations'][index]
+
+    # Load model
+    models = ifcUtils.load_models(model_dir=config['general_config']['model_directory'],
+                                  models={modelConf['name']: modelConf['filename']})
+    model = models[modelConf['name']]
+
+    # Find preprocess file
+    preprocess_file = os.path.join('input', modelConf['preprocess_file'])
     
-    aModel = createIfcAnalyticalModel.runThis(model, outputFileName="analyticalModel.ifc")
-    doPyNiteFEA.runThis(aModel)
+    logger.disable("pyconbim.geomUtils") # Temporary, until issue is fixed
+    
+    outputFileName = os.path.join(config['general_config']['output_directory'], modelConf['analytical_output_filename'])
+
+    # Create model
+    aModel = createIfcAnalyticalModel.runThis(model, outputFileName=outputFileName, preprocess_file=preprocess_file)
+
+    if config['general_config']['run_pynite']:
+        doPyNiteFEA.runThis(aModel)
 
 if __name__ == "__main__":
     logger.info(f"ifcopenshell version: {ifcopenshell.version}")
@@ -56,7 +73,7 @@ if __name__ == "__main__":
         logger.exception(e)
         exit(1)
 
-    runThis()
+    cli()
 
     logger.info("Done.")
     exit(0)

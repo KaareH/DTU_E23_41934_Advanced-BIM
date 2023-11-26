@@ -1,0 +1,21 @@
+{
+    "general_config": {
+        "run_pynite": false,
+        "model_directory": "models",
+        "output_directory": "output"
+    },
+    "model-configurations": [
+        {
+            "name": "LLYN - STRU",
+            "filename": "LLYN - STRU.ifc",
+            "preprocess_file": "LLYN-corrections.json",
+            "analytical_output_filename": "LLYN-simple-frame.ifc"
+        },
+        {
+            "name": "Simple frame",
+            "filename": "simple-frame-with-slab-wall.ifc",
+            "preprocess_file": "simple-frame-slab-walls-corrections.json",
+            "analytical_output_filename": "analytical-simple-frame.ifc"
+        }
+    ]
+}
