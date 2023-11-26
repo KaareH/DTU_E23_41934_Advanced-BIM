@@ -261,6 +261,10 @@ class Column(AxialMember):
     def __init__(self, elementData) -> None:
         super().__init__(elementData)
 
+class Pile(AxialMember):
+    def __init__(self, elementData) -> None:
+        super().__init__(elementData)
+
 class Slab(PlanarMember):
     def __init__(self, elementData) -> None:
         super().__init__(elementData)
@@ -269,14 +273,11 @@ class Wall(PlanarMember):
     def __init__(self, elementData) -> None:
         super().__init__(elementData)
 
-class Footing(PhysicalMember):
+class Footing(PlanarMember):
     """Footing. This is a special member, as it defines boundary conditions for the model"""
 
     def __init__(self, elementData) -> None:
-        super().__init__(elementData.GUID, elementData.OBB)
-        self.body = elementData.body
-        self.pnt = gp_Pnt(elementData.OBB.Center())
-        logger.warning(self.pnt)
+        super().__init__(elementData)
 
     def to_ifc_structuralMember(self, model):
         super().to_ifc_structuralMember(model)
@@ -349,6 +350,7 @@ class AnalyticalModel:
         elementFunctions = {
             "IfcBeam": Beam,
             "IfcColumn": Column,
+            "IfcPile": Pile,
             "IfcSlab": Slab,
             "IfcWall": Wall,
             "IfcFooting": Footing,
@@ -447,29 +449,6 @@ class AnalyticalModel:
                     planarMember = member2
                 virtualMember = self.solve_connection_axial_planar(axialMember, planarMember)
                 
-            elif (isinstance(member1, AxialMember) and isinstance(member2, Footing)
-                or
-                isinstance(member2, AxialMember) and isinstance(member1, Footing)):
-                if isinstance(member1, Footing):
-                    footing = member1
-                    axialMember = member2
-                else:
-                    footing = member2
-                    axialMember = member1
-                
-                axis = axialMember.axis
-
-                # print(footing.pnt)
-                # pnt = gp_Pnt(footing.pnt)
-
-                p1, p2 = geomUtils.find_closest_points(axis, footing.body)
-                virtualMember = make_virtual_member(key1, key2, p1, p2)
-
-                # Assuming p1 is on the footing
-                footing.pnt = p1
-
-                if virtualMember == None:
-                    continue
             else:
                 logger.warning(f"Unknown connection between {type(member1)} and {type(member2)}")
                 continue

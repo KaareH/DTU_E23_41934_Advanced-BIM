@@ -44,6 +44,7 @@ BLACK = Quantity_Color(0.0, 0.0, 0.0, Quantity_TOC_RGB)
 GREY = Quantity_Color(0.5, 0.5, 0.5, Quantity_TOC_RGB)
 YELLOW = Quantity_Color(0.0, 1.0, 1.0, Quantity_TOC_RGB)
 ORANGE = Quantity_Color(1.0, 0.5, 0.0, Quantity_TOC_RGB)
+PURPLE = Quantity_Color(0.5, 0.0, 0.5, Quantity_TOC_RGB)
 
 DEBUG_SHAPE = namedtuple('DEBUG_SHAPE', ['shape', 'color', 'transparency'])
 DEBUG_RENDERER_ENABLED = True
@@ -300,17 +301,34 @@ def RenderStructuralMembersFunc(renderer, **args):
         )
         renderLabel("Column", member.GUID)
         return
+    
+    def renderPile(member):
+        wire = member.axis
+
+        # Render axis
+        shape = wire
+        ais_shp = AIS_Shape(shape)
+        ais_shp.SetWidth(WIRE_SIZE)
+        ais_shp.SetColor(PURPLE)
+        ais_context.Display(ais_shp, False)
+
+        # Render points
+        p1, p2 = geomUtils.get_wire_endpoints(wire)
+        renderer.DisplayShape(
+            p1,
+            color=YELLOW,
+        )
+        renderer.DisplayShape(
+            p2,
+            color=YELLOW,
+        )
+        renderLabel("Pile", member.GUID)
+        return
 
     def renderFooting(member):
         body = member.body
         renderer.DisplayShape(
             body,
-            color=BLACK,
-            transparency=transparency,
-            # update=to_update,
-        )
-        renderer.DisplayShape(
-            member.pnt,
             color=BLACK,
             transparency=transparency,
             # update=to_update,
@@ -374,7 +392,7 @@ def RenderStructuralMembersFunc(renderer, **args):
         for i,  (GUID, member) in enumerate(members.items()):
             to_update = i % 50 == 0
             try:
-                if type(member) in [Beam, Column]:
+                if type(member) in [Beam, Column, Pile]:
                     body = modelData.shapes[GUID]['Body'].geometry
                     renderer.DisplayShape(
                         body,
@@ -399,6 +417,8 @@ def RenderStructuralMembersFunc(renderer, **args):
                 renderBeam(member)
             elif type(member) == Column:
                 renderColumn(member)
+            elif type(member) == Pile:
+                renderPile(member)
             elif type(member) == Footing:
                 renderFooting(member)
             elif type(member) == VirtualMember:
