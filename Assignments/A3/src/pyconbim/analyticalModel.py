@@ -21,6 +21,7 @@ import ifcopenshell.util.unit
 
 import pyconbim.geomUtils as geomUtils
 import pyconbim.rendering as rendering
+import pyconbim.ifcUtils as ifcutils
 import pyconbim.utils as utils
 
 from OCC.Core.gp import gp_Pnt
@@ -116,10 +117,9 @@ class AxialMember(PhysicalMember):
 
         # Should wireShape be transformed back to global coordinates?
         p1, p2 = geomUtils.get_wire_endpoints(wireShape)
-        P1 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p1.Coord()})
-        P2 = model.create_entity("IfcCartesianPoint", **{"Coordinates": p2.Coord()})
-        V1 = model.create_entity("IfcVertexPoint", **{"VertexGeometry": P1})
-        V2 = model.create_entity("IfcVertexPoint", **{"VertexGeometry": P2})
+
+        V1 = ifcutils.createIfcVertexPoint(p1, model)
+        V2 = ifcutils.createIfcVertexPoint(p2, model)
 
         edge = model.create_entity("IfcEdge", **{
             "EdgeStart": V1,

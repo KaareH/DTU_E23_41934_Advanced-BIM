@@ -17,6 +17,7 @@ import ifcopenshell.util.placement
 import ifcopenshell.geom
 import ifcopenshell.util.shape
 import ifcopenshell.util.selector
+from OCC.Core.gp import gp_Pnt
 
 import pyconbim.geomUtils as geomUtils
 
@@ -226,3 +227,9 @@ def writeToFile(model, fileName, directory="./output"):
     logger.info(f"Writing to {filePath}...")
     model.write(filePath)
     logger.info("Done")
+
+def createIfcVertexPoint(point: gp_Pnt, model):
+    """Create IfcVertexPoint from point"""
+    P = model.create_entity("IfcCartesianPoint", **{"Coordinates": point.Coord()})
+    V = model.create_entity("IfcVertexPoint", **{"VertexGeometry": P})
+    return V
