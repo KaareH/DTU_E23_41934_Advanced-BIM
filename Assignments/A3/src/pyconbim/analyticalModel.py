@@ -28,17 +28,106 @@ from OCC.Core.gp import gp_Pnt
 
 # TODO:Shared Object placement: https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcStructuralAnalysisModel.htm
 
-class Knot3D:
+GENERAL_TOLERANCE = 0.0001
+
+class StructuralConnection(ABC):
     def __init__(self) -> None:
         pass
 
+    @abstractmethod
+    def to_ifc_structuralConnection(self, model):
+        """"Create object as entity in IfcModel"""
+        pass
+
+class Knot3D(StructuralConnection):
+    def __init__(self, key, point: gp_Pnt, member) -> None:
+        self.key = key
+        self.point = point
+        self.members = list()
+        self.constraint = None
+
+        self.addMember(member)
+
+    def addMember(self, member):
+        member.add_node(self)
+        self.members.append(member)
+
+    def clearMembers(self):
+        for member in self.members:
+            member.remove_node(self)
+        self.members = []
+
+    def get_point(self) -> gp_Pnt:
+        return self.point
+    
+    def is_equal(self, other_knot) -> bool:
+        isClose = geomUtils.distance_between_points(self.get_point(), other_knot.get_point()) < GENERAL_TOLERANCE
+        return isClose
+    
+    def is_destroyed(self) -> bool:
+        return self.point is None
+    
+    def destroy(self):
+        self.clearMembers()
+        self.point = None
+    
+    def merge_nodes(self, other_knot):
+        """Merge two nodes that are close to each other"""
+        assert self.is_equal(other_knot)
+
+        for member in other_knot.members:
+            self.addMember(member)
+        
+        other_knot.destroy()
+
+    def to_ifc_structuralConnection(self, model):
+        """Create IfcStructuralPointConnection in IfcModel"""
+        name = f"{type(self).__name__}"
+        description = f"Node {self.key}"
+        pointConnection = ifcopenshell.api.run("root.create_entity", model, name=name,
+                ifc_class="IfcStructuralPointConnection")
+        pointConnection.Description = description
+
+        vertex = ifcutils.createIfcVertexPoint(self.get_point(), model)
+
+        context = ifcopenshell.util.representation.get_context(model, "Model")
+        topologyRepresentation = model.createIfcTopologyRepresentation(ContextOfItems=context,
+                    Items=[vertex], RepresentationIdentifier="Reference", RepresentationType="Vertex")
+
+        # TODO: add related members
+
+        # TODO: add better boundary conditions
+        if self.boundaryCondition == "Fixed":
+            boundaryNodeCondition = model.createIfcBoundaryNodeCondition(Name = "Fixed")
+            boundaryNodeCondition.TranslationStiffnessX = True
+            boundaryNodeCondition.TranslationStiffnessY = True
+            boundaryNodeCondition.TranslationStiffnessZ = True
+            boundaryNodeCondition.RotationalStiffnessX = True
+            boundaryNodeCondition.RotationalStiffnessY = True
+            boundaryNodeCondition.RotationalStiffnessZ = True
+
+            pointConnection.AppliedCondition = boundaryNodeCondition
+
+        ifcopenshell.api.run("geometry.assign_representation", model, product=pointConnection, representation=topologyRepresentation)
+
+        return pointConnection
+
 class StructuralMember(ABC):
-    """"Abstract class for structural members"""
+    """Abstract class for structural members"""
 
     def __init__(self, GUID) -> None:
         self.GUID = GUID
         self.nodes = []
         self.ifcStructuralItem = None
+    
+    def add_node(self, node):
+        self.nodes.append(node)
+
+    def remove_node(self, node):
+        self.nodes.remove(node)
+
+    def get_nodes(self):
+        return self.nodes
 
 class PhysicalMember(StructuralMember, ABC):
     def __init__(self, GUID, OBB) -> None:
@@ -91,6 +180,7 @@ class AxialMember(PhysicalMember):
         super().to_ifc_structuralMember(model)
         # TODO: Add direction, currently not correct
         # TODO: Use axis instead of endpoints. Use IfcEdgeCurve instead of IfcEdge
+        # TODO: Use IfcVertexPoint from nodes
 
         # Find unit-scale and transform shape
         unit_scale = ifcopenshell.util.unit.calculate_unit_scale(model)
@@ -294,6 +384,7 @@ class AnalyticalModel:
 
     def __init__(self) -> None:
         self.members = dict()
+        self.keyGenerator = KeyGenerator()
 
     def addMember(self, member) -> None:
         if isinstance(member, PhysicalMember):
@@ -320,6 +411,16 @@ class AnalyticalModel:
         building = buildings[0]
         run("aggregate.assign_object", model, relating_object=building, product=analysisModel)
         
+        # Create point connections
+        pointConnections = []
+        nodes = self.get_nodes()
+        for key, node in nodes.items():
+            if isinstance(node, Knot3D):
+                pointConnection = node.to_ifc_structuralConnection(model)
+                pointConnections.append(pointConnection)
+            else:
+                logger.warning(f"Unknown node type: {type(node)}, key: {key}")
+
         # Create structural members
         curveMembers = []
         surfaceMembers = []
@@ -332,10 +433,14 @@ class AnalyticalModel:
                 pass
                 #raise TypeError(f"Unknown member type: {type(member)}")
         
+        logger.info(f"Point connections: {len(pointConnections)}")
         logger.info(f"Curve members: {len(curveMembers)}")
         logger.info(f"Surface members: {len(surfaceMembers)}")
 
         # Assign to analysis model
+        ifcopenshell.api.run("group.assign_group", model,
+                    products=pointConnections, group=analysisModel)
+        
         ifcopenshell.api.run("group.assign_group", model,
                     products=curveMembers, group=analysisModel)
         
@@ -390,16 +495,21 @@ class AnalyticalModel:
         
         logger.info(f"Added {addCount}/{len(elements)} members to analytical model.")
                 
-    def solve_connection_axial_axial(self, member1: AxialMember, member2: AxialMember) -> VirtualMember:
+    def solve_connection_axial_axial(self, member1: AxialMember, member2: AxialMember) -> VirtualMember | None:
         """Solve connection between two axial members"""
         wire1 = member1.axis
         wire2 = member2.axis
+
+        for member in [member1, member2]:
+            p1, p2 = geomUtils.get_wire_endpoints(member.axis)
+            Knot3D(self.keyGenerator.generate('N'), p1, member)
+            Knot3D(self.keyGenerator.generate('N'), p2, member)
 
         p1, p2 = geomUtils.find_closest_points(wire1, wire2)
         virtualMember = make_virtual_member(member1.GUID, member2.GUID, p1, p2)
         return virtualMember
 
-    def solve_connection_axial_planar(self, axialMember: AxialMember, planarMember: PlanarMember) -> VirtualMember:
+    def solve_connection_axial_planar(self, axialMember: AxialMember, planarMember: PlanarMember) -> VirtualMember | None:
         """Solve connection between axial and planar member"""
         axis = axialMember.axis
         planarSurface = planarMember.surface
@@ -409,8 +519,58 @@ class AnalyticalModel:
         virtualMember = make_virtual_member(axialMember.GUID, planarMember.GUID, p1, p2)
         return virtualMember
 
-    def solve_connection_planar_planar(self, member1: PlanarMember, member2: PlanarMember) -> VirtualMember:
+    def solve_connection_planar_planar(self, member1: PlanarMember, member2: PlanarMember) -> VirtualMember | None:
         """Solve connection between two planar members"""
+        # TODO: Check angle between planes. If same plane orientation, other type of connection.
+
+        # OBB = member2.OBB
+        # obbShape = geomUtils.convert_bnd_to_shape(OBB)
+        # intersection = geomUtils.find_solid_face_intersection(obbShape, member1.surface)
+        # rendering.addDebugShape(intersection)
+        # OBB = member2.OBB
+        # obbShape = geomUtils.convert_bnd_to_shape(OBB)
+        # intersection = geomUtils.find_solid_face_intersection(obbShape, member1.surface)
+        # rendering.addDebugShape(intersection)
+
+        # OBB1 = geomUtils.convert_bnd_to_shape(member1.OBB)
+        # OBB2 = geomUtils.convert_bnd_to_shape(member2.OBB)
+
+        # int4 = geomUtils.find_solid_face_intersection(OBB1, OBB2)
+        # if int4:
+        #     rendering.addDebugShape(int4)
+        #     print("###########################")
+
+        int1 = geomUtils.find_face_face_intersection(member1.surface, member2.plane)
+        int2 = geomUtils.find_face_face_intersection(member1.plane, member2.surface)
+        int3 = geomUtils.find_face_face_intersection(member1.plane, member2.plane)
+
+        if int1: rendering.addDebugShape(int1)
+        if int2: rendering.addDebugShape(int2)
+        if int3: rendering.addDebugShape(int3)
+
+        return None
+        ########
+        wire = geomUtils.find_face_face_intersection(member1.surface, member2.surface)
+        if wire == None:
+            logger.warning("No intersection between two planar members!")
+        else: return None
+
+        planeface = geomUtils.get_planeface(member1.plane)
+        wire = geomUtils.find_face_face_intersection(planeface, member2.surface)
+        if wire == None:
+            logger.warning("No intersection between plane and surface!")
+        else: return None
+        
+        planeface = geomUtils.get_planeface(member2.plane)
+        wire = geomUtils.find_face_face_intersection(member1.surface, planeface)
+        if wire == None:
+            logger.warning("No intersection between plane and surface!")
+        else: return None
+
+        if wire:
+            logger.debug(f"Wire: {wire}")
+            rendering.addDebugShape(wire)
+
         return None
     
     def solve_connections(self) -> None:
@@ -457,12 +617,39 @@ class AnalyticalModel:
                 continue
             self.addMember(virtualMember)
 
+    def get_nodes(self):
+        nodes = dict()
+        for member in self.members.values():
+            member_nodes = member.get_nodes()
+            for member_node in member_nodes:
+                # nodes.add(member_node)
+                nodes[member_node.key] = member_node
+            # nodes.extend(member.get_nodes())
+        return nodes
+    
+    def merge_nodes(self):
+        """Merge nodes that are close to each other"""
+        nodes = self.get_nodes()
+
+        logger.debug(f"Merging {len(nodes)} nodes...")
+
+        for node in nodes.values():
+            for other_node in nodes.values():
+                if node == other_node:
+                    continue
+                if node.is_destroyed() or other_node.is_destroyed():
+                    continue
+                if node.is_equal(other_node):
+                    node.merge_nodes(other_node)
+
+        logger.debug(f"Merged {len(nodes)} to {len(self.get_nodes())} nodes...")
+
 class KeyGenerator:
     def __init__(self):
         self.keys = dict()
         self.counter = 0
 
-    def generate(self, prefix, longKey):
+    def generate(self, prefix, longKey=None):
         self.counter += 1
         shortKey = f"{prefix}_{self.counter}"
         self.keys[shortKey] = longKey
@@ -473,7 +660,7 @@ def make_virtual_member(key1, key2, p1, p2):
     """Very stiff member for connections"""
     distance = geomUtils.distance_between_points(p1, p2)
     
-    TOLERANCE = 0.0001
+    TOLERANCE = GENERAL_TOLERANCE
     if distance <= TOLERANCE:
         return None
     try:
