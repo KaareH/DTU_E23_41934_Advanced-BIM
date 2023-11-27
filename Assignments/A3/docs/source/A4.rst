@@ -6,6 +6,9 @@ As a part of this assingment, is the documentation of PyConBIM.
 
 Use-case is described in :doc:`A3`.
 
+This assignment targets targets *OpenBIM Guru, level-3*.
+That is, further development of this tool by structural engineers with software development skills.
+
 Prerequisites
 ----------------------
 
