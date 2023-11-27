@@ -392,6 +392,11 @@ class Column(AxialMember):
 class Pile(AxialMember):
     def __init__(self, elementData) -> None:
         super().__init__(elementData)
+    
+    def add_node(self, node):
+        """Quick and dirty boundary condition for piles"""
+        super().add_node(node)
+        node.boundaryCondition = "Fixed"
 
 class Slab(PlanarMember):
     def __init__(self, elementData) -> None:
@@ -410,6 +415,11 @@ class Footing(PlanarMember):
     def to_ifc_structuralMember(self, model):
         super().to_ifc_structuralMember(model)
         pass
+
+    def add_node(self, node):
+        """Quick and dirty boundary condition for footings"""
+        super().add_node(node)
+        node.boundaryCondition = "Fixed"
 
 ElementData = namedtuple('ElementData', ['GUID', 'element', 'shapes', 'keys', 'OBB', 'body'])
 
