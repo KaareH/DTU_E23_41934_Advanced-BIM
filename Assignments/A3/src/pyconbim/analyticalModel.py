@@ -32,11 +32,17 @@ GENERAL_TOLERANCE = 0.0001
 
 class StructuralConnection(ABC):
     def __init__(self) -> None:
-        pass
+        self.ifcStructuralConnection = None
 
     @abstractmethod
     def to_ifc_structuralConnection(self, model):
         """"Create object as entity in IfcModel"""
+        pass
+
+    @abstractmethod
+    def to_ifc_post_job(self, model):
+        """"This should be ran after every object has run to_ifc_*.
+        """
         pass
 
 class Knot3D(StructuralConnection):
@@ -97,6 +103,7 @@ class Knot3D(StructuralConnection):
         # TODO: add related members
 
         # TODO: add better boundary conditions
+        # https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcBoundaryNodeCondition.htm
         if self.boundaryCondition == "Fixed":
             boundaryNodeCondition = model.create_entity("IfcBoundaryNodeCondition", **{
                 "Name": "Fixed",
@@ -112,7 +119,20 @@ class Knot3D(StructuralConnection):
 
         ifcopenshell.api.run("geometry.assign_representation", model, product=pointConnection, representation=topologyRepresentation)
 
+        self.ifcStructuralConnection = pointConnection
         return pointConnection
+    
+    def to_ifc_post_job(self, model):
+        """ Add related members to point connection
+        """
+        for member in self.members:
+            if isinstance(member, PhysicalMember):
+                ifcopenshell.api.run("structural.add_structural_member_connection", model,
+                                    relating_structural_member=member.ifcStructuralMember,
+                                    related_structural_connection=self.ifcStructuralConnection)
+            else:
+                logger.warning(f"Did not add member type: {type(member)} to connection!")
+
 
 class StructuralMember(ABC):
     """Abstract class for structural members"""
@@ -120,7 +140,7 @@ class StructuralMember(ABC):
     def __init__(self, GUID) -> None:
         self.GUID = GUID
         self.nodes = []
-        self.ifcStructuralItem = None
+        self.ifcStructuralMember = None
     
     def add_node(self, node):
         self.nodes.append(node)
@@ -138,7 +158,11 @@ class PhysicalMember(StructuralMember, ABC):
     
     @abstractmethod
     def to_ifc_structuralMember(self, model):
-        assert self.ifcStructuralItem is None
+        assert self.ifcStructuralMember is None
+
+    @abstractmethod
+    def to_ifc_post_job(self, model):
+        pass
 
 class VirtualMember(StructuralMember):
     """Very stiff virtual member for connections"""
@@ -149,6 +173,9 @@ class VirtualMember(StructuralMember):
         self.axis = axis
         self.member1 = member1
         self.member2 = member2
+    
+    def to_ifc_post_job(self, model):
+        pass
 
 class AxialMember(PhysicalMember):
     """Abstract class for axial members"""
@@ -226,7 +253,11 @@ class AxialMember(PhysicalMember):
 
         ifcopenshell.api.run("geometry.assign_representation", model, product=curveMember, representation=topologyRepresentation)
 
+        self.ifcStructuralMember = curveMember
         return curveMember
+    
+    def to_ifc_post_job(self, model):
+        pass
 
 class PlanarMember(PhysicalMember):
     """Abstract class for planar members"""
@@ -344,7 +375,11 @@ class PlanarMember(PhysicalMember):
 
         ifcopenshell.api.run("geometry.assign_representation", model, product=surfaceMember, representation=topologyRepresentation)
 
+        self.ifcStructuralMember = surfaceMember
         return surfaceMember
+    
+    def to_ifc_post_job(self, model):
+        pass
 
 class Beam(AxialMember):
     def __init__(self, elementData) -> None:
@@ -405,7 +440,8 @@ class AnalyticalModel:
         """"Return model as a IfcStructuralAnalysisModel with structural members"""
 
         # Create analysis model
-        analysisModel = run("root.create_entity", model, ifc_class="IfcStructuralAnalysisModel", predefined_type="LOADING_3D")
+        # analysisModel = run("root.create_entity", model, ifc_class="IfcStructuralAnalysisModel", predefined_type="LOADING_3D")
+        analysisModel = ifcopenshell.api.run("structural.add_structural_analysis_model", model)
         # run("type.assign_type", model, related_object=analysisModel, relating_type=element_type)
         
         # Assing to building
@@ -441,14 +477,31 @@ class AnalyticalModel:
         logger.info(f"Surface members: {len(surfaceMembers)}")
 
         # Assign to analysis model
-        ifcopenshell.api.run("group.assign_group", model,
-                    products=pointConnections, group=analysisModel)
+        # ifcopenshell.api.run("group.assign_group", model,
+        #             products=pointConnections, group=analysisModel)
+        # ifcopenshell.api.run("group.assign_group", model,
+        #             products=curveMembers, group=analysisModel)
         
-        ifcopenshell.api.run("group.assign_group", model,
-                    products=curveMembers, group=analysisModel)
+        # ifcopenshell.api.run("group.assign_group", model,
+        #             products=surfaceMembers, group=analysisModel)
         
-        ifcopenshell.api.run("group.assign_group", model,
-                    products=surfaceMembers, group=analysisModel)
+        # Doesn't seem to make any difference, whether using above or below. Below seems more idiomatic.
+
+        for pointConnection in pointConnections:
+            ifcopenshell.api.run("structural.assign_structural_analysis_model", model,
+                                product=pointConnection, structural_analysis_model=analysisModel)
+        for curveMember in curveMembers:
+            ifcopenshell.api.run("structural.assign_structural_analysis_model", model,
+                                product=curveMember, structural_analysis_model=analysisModel)
+        for surfaceMember in surfaceMembers:
+            ifcopenshell.api.run("structural.assign_structural_analysis_model", model,
+                                product=surfaceMember, structural_analysis_model=analysisModel)
+            
+        # Post job
+        for member in self.members.values():
+            member.to_ifc_post_job(model)        
+        for connection in self.get_nodes().values():
+            connection.to_ifc_post_job(model)
 
         return analysisModel
     
