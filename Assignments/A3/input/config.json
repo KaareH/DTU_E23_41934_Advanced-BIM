@@ -9,7 +9,7 @@
             "name": "LLYN - STRU",
             "filename": "LLYN - STRU.ifc",
             "preprocess_file": "LLYN-corrections.json",
-            "analytical_output_filename": "LLYN-simple-frame.ifc"
+            "analytical_output_filename": "analytical-LLYN.ifc"
         },
         {
             "name": "Simple frame",
