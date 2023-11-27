@@ -19,7 +19,7 @@ Though this is assingment 4, the working directory is the same as in assingment 
 Running the CLI tool
 -----------------------------
 
-Make sure you are in teh working directory, :code:`./Assignments/A3/`.
+Make sure you are in the working directory, :code:`./Assignments/A3/`.
 
 Execute the following command:
 
