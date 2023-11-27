@@ -21,7 +21,7 @@ import pyconbim.modelPreprocessor as modelPP
 from PyNite import FEModel3D
 from PyNite.Visualization import Renderer
 
-def runThis(model, outputFileName, preprocess_file):
+def runThis(model, outputFilePath, preprocess_file):
     modelData = ModelData(model)
     modelPP.preProcessModel(modelData, preprocess_file)
 
@@ -42,6 +42,6 @@ def runThis(model, outputFileName, preprocess_file):
     logger.info(f"Creating IfcStructuralAnalysisModel...")
     aModel.to_ifc_analysisModel(modelData.model)
 
-    pyconbim.ifcUtils.writeToFile(modelData.model, outputFileName)
+    pyconbim.ifcUtils.writeToFile(modelData.model, outputFilePath)
 
     return aModel

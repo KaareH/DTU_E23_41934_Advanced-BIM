@@ -52,10 +52,10 @@ def run(modeloption):
     
     logger.disable("pyconbim.geomUtils") # Temporary, until issue is fixed
     
-    outputFileName = os.path.join(config['general_config']['output_directory'], modelConf['analytical_output_filename'])
+    outputFilePath = os.path.join(config['general_config']['output_directory'], modelConf['analytical_output_filename'])
 
     # Create model
-    aModel = createIfcAnalyticalModel.runThis(model, outputFileName=outputFileName, preprocess_file=preprocess_file)
+    aModel = createIfcAnalyticalModel.runThis(model, outputFilePath=outputFilePath, preprocess_file=preprocess_file)
 
     if config['general_config']['run_pynite']:
         doPyNiteFEA.runThis(aModel)
