@@ -14,6 +14,7 @@ Welcome to PyConBIM's documentation!
    installation
    A3
    A4
+   A5
    pyconbim
    notebooks
 
