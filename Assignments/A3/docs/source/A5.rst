@@ -5,6 +5,14 @@ A5 - Project Reflection
 Learning experience
 --------------------------------------------
 
+- Navigating IFC-documentation
+- Using OpenCascade
+- Not strictly BIM related skills
+
+    * Github actions, automating tests
+    * Sphinx
+
+
 Importance of keeping structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -25,6 +33,23 @@ been executed. The large model would also be overwhelming to visually inspect, a
 As I moved away from the Jupyter notebooked oriented workflow, I made a small dummy IFC-model, which had just the
 right amount of complexity to test the code, whilst still being small. This vastly improved my workflow.
 Though not many, I also made a few automated unit tests, which would help notify, if I broke something.
+
+Finally, I also made greater use of type hints and doc-strings, which helped me keep track of my own code.
+
+OpenCascade
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Being a C++ library, OpenCascade is not the most pythonic library to work with, and had a bit of a learning curve.
+However, it is a powerful library, and necesarry for what I wanted to do. Its capability to easily create oriented
+bounding boxes (OBB), perform intersections and boolean operations, eased the development of my tool.
+
+
+Don't trust your data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+IFC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 Process of developing the tutorial
