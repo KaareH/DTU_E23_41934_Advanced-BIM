@@ -45,12 +45,19 @@ However, it is a powerful library, and necesarry for what I wanted to do. Its ca
 bounding boxes (OBB), perform intersections and boolean operations, eased the development of my tool.
 
 
-Don't trust your data
+Don't trust your data (blindly)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With reference to :ref:`notebooks/A4-Tutorial:False axis`, it's evident that one should not blindly trust their data.
+Of course, *garbage in, garbage out* applies, but I think it's important to perform as many tests as possible and
+use cross validation, to minimize the risk of errors.
 
 IFC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Apart from gaining a greather proficiency in developing with `IfcOpenShell <https://ifcopenshell.org/>`_, I got more
+experience with the IFC-schema. Namely but not limited to :code:`IfcStructuralItem` (and its subclasses), :code:`IfcRelConnectsStructuralMember`,
+:code:`IfcTopologicalRepresentationItem` and :code:`IfcTopologyRepresentation`.
 
 
 Process of developing the tutorial
