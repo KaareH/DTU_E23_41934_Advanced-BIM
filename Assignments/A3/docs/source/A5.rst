@@ -2,6 +2,8 @@
 A5 - Project Reflection
 =========================
 
+
+
 Learning experience
 --------------------------------------------
 
@@ -44,7 +46,6 @@ Being a C++ library, OpenCascade is not the most pythonic library to work with, 
 However, it is a powerful library, and necesarry for what I wanted to do. Its capability to easily create oriented
 bounding boxes (OBB), perform intersections and boolean operations, eased the development of my tool.
 
-
 Don't trust your data (blindly)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -64,11 +65,24 @@ Process of developing the tutorial
 --------------------------------------------
 
 
+
 Recieved feedback on the tutorial
 --------------------------------------------
+
+
 
 My future for Advanced use of OpenBIM
 --------------------------------------------
 
+
+
 Wrap up
 -------------------------
+
+Despite my tool not having all the functionality I initially had pictured, I still think the project turned out well.
+If only I have had more time, I could probably have fully implemented the tool as described in :ref:`A3:Focused/implemented IDM`.
+As often being the case, it's easy to understimate the actual time it takes to implement something.
+
+Yet, I'm still happy with the result, and I think I have learned a lot during the process. Beside BIM-specific skills, I have
+also gained more experience with OpenCascade, Sphinx, Github actions and more. It's likely that I will continue to work on
+this tool, and hopefully I will be able to implement the missing functionality for a coherent tool.
