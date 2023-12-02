@@ -2,4 +2,40 @@
 A5 - Project Reflection
 =========================
 
-Abc
+Learning experience
+--------------------------------------------
+
+Importance of keeping structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+During assingment 2, and a great deal of assingment 3, I mostly wrote the code in huge Jupyter notebooks
+filled with various experiements and garbage code. This made it very difficult to keep track of what I had
+to do, and which code was be used. To some extend, I would later copy some code into `.py` files if I deemed
+it to be kept. However, this was not a good way to work, and I would often end lost in a big pile of code.
+
+Later during assingment 3, I started to use a more structured approach, and attempted to write most of the code
+in the `PyConBIM` package modules from the beginning. This made it much easier to keep track of what I had
+done, and what I had to do. It also made it easier to reuse code, and to keep the code clean and readable.
+
+Another issue, was the relatively long/processing time of the large LLYN IFC model, which hindered my workflow.
+This was one of the reasons, I initially worked in Jupyter notebooks, to keep the processed model in memory
+during development. Again, this made it difficult to keep track of variables, and the order of which code had
+been executed. The large model would also be overwhelming to visually inspect, and difficult to get a good overview.
+
+As I moved away from the Jupyter notebooked oriented workflow, I made a small dummy IFC-model, which had just the
+right amount of complexity to test the code, whilst still being small. This vastly improved my workflow.
+Though not many, I also made a few automated unit tests, which would help notify, if I broke something.
+
+
+Process of developing the tutorial
+--------------------------------------------
+
+
+Recieved feedback on the tutorial
+--------------------------------------------
+
+My future for Advanced use of OpenBIM
+--------------------------------------------
+
+Wrap up
+-------------------------
