@@ -26,7 +26,9 @@ Make sure you are in the working directory, :code:`./Assignments/A3/`.
 
 Execute the following command:
 
-:code:`python main.py`
+.. code-block:: console
+    
+    $ python main.py
 
 The help menu should appear. Currently, the only command is :code:`run`.
 
@@ -37,7 +39,9 @@ First model
 
 Let's run with a small dummy-model first:
 
-:code:`python main.py run "Simple frame"`.
+.. code-block:: console
+    
+    $ python main.py run "Simple frame"
 
 Please note the quotation marks, as the name has a space. Names are case-sensitive.
 
@@ -69,7 +73,9 @@ Now let's generate the analytical model for the large model, :code:`LLYN - STRU.
 
 Once again, open the generated file in BlenderBIM, to view the structural analysis model.
 
-:code:`python main.py run "LLYN - STRU"`.
+.. code-block:: console
+    
+    $ python main.py run "LLYN - STRU"
 
 .. figure:: media/LLYN-StructuralModel.png
    :alt: analytical-LLYN.ifc
