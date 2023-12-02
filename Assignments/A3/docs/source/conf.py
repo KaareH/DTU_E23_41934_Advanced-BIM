@@ -30,9 +30,11 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.autosectionlabel',
     'nbsphinx',
     ]
 
+autosectionlabel_prefix_document = True
 autosummary_generate = True
 
 templates_path = ['_templates']
