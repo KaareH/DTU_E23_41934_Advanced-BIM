@@ -71,10 +71,16 @@ that although not perfect, this method was certainly a valid approach for the de
 Process of developing the tutorial
 --------------------------------------------
 
-* Did the process of the course enable you to answer or define questions that you might need later for thesis?
-* Would you have preferred to have been given less choice in the use cases?
-* Was the number of tools for the course ok - should we have more or less? - if so which ones would you leave out?
+I did not enroll in this course with any specific intentions for my later thesis, but rather to have the opportunity
+to develop an OpenBIM tool and attain a greater general level of proficiency in BIM.
 
+I enjoyed that I could work on a project of my own choice, but some level of guidance regarding the use cases would have
+been nice.
+
+The number of tools for the course is in my opinion appropriate. Some introduction to the suite of ifcopenshell utilities
+such as `BIMServer-Plugin <https://blenderbim.org/docs-python/bimserver-plugin.html>`_,
+`IfcDiff <https://blenderbim.org/docs-python/ifcdiff.html>`_ or `IfcPatch <https://blenderbim.org/docs-python/ifcpatch.html>`_
+could have been nice.
 
 
 Recieved feedback on the tutorial
