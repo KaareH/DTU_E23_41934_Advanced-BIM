@@ -93,3 +93,12 @@ Tutorial notebook
    :caption: Contents:
 
    notebooks/A4-Tutorial
+
+
+Walkthrough video
+----------------------
+
+.. raw:: html
+
+   <video controls src="_static/A4.mp4" width=100%/> 
+
