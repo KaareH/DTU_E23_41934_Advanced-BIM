@@ -3,12 +3,14 @@ A5 - Project Reflection
 =========================
 
 
-
 Learning experience
 --------------------------------------------
 
-This series of assignments, has brought me multiple learning experiences. I have gained a greater proficiency in
-both BIM-specific skills, but also more general skills that are also useful outside the BIM-domain.
+This series of assignments, has brought me multiple learning experiences. I have gained a greater proficiency both
+in BIM-specific skills, but also more general skills that are also useful outside the BIM-domain.
+
+I did have prior experience with Ifc and IfcOpenShell before enrolling in this course, but not much experience with
+actually developing any BIM-tools.
 
 
 Importance of keeping structure
