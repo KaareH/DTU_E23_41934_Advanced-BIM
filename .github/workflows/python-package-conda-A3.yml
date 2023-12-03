@@ -11,14 +11,15 @@ on:
 permissions:
   contents: read
   id-token: write
-
+  actions: write # require to delete cache
+  
 env:
   CACHE_NUMBER: 1  # increase to reset cache manually
 
 jobs:
   build:
     strategy:
-      max-parallel: 5
+      max-parallel: 2
       matrix:
         include:
           - os: ubuntu-latest
