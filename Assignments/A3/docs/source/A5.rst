@@ -7,12 +7,8 @@ A5 - Project Reflection
 Learning experience
 --------------------------------------------
 
-- Navigating IFC-documentation
-- Using OpenCascade
-- Not strictly BIM related skills
-
-    * Github actions, automating tests
-    * Sphinx
+This series of assignments, has brought me multiple learning experiences. I have gained a greater proficiency in
+both BIM-specific skills, but also more general skills that are also useful outside the BIM-domain.
 
 
 Importance of keeping structure
@@ -60,20 +56,45 @@ Apart from gaining a greather proficiency in developing with `IfcOpenShell <http
 experience with the IFC-schema. Namely but not limited to :code:`IfcStructuralItem` (and its subclasses), :code:`IfcRelConnectsStructuralMember`,
 :code:`IfcTopologicalRepresentationItem` and :code:`IfcTopologyRepresentation`.
 
+Flexibility/possibilities of FEM
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It proved difficult to reliably and consistently create analytical joints for structural members - especially for
+joints that include multiple columns and beams, with center-axes not aligned nor parallel. For these cases, I had
+the idea of creating the joints with intermediate "virtual" members, which greatly simplified the implementation.
+
+In `another course <https://kurser.dtu.dk/course/41958>`_ I spoke to the professor about this method. He told me
+that although not perfect, this method was certainly a valid approach for the described use case.
+
+
 
 Process of developing the tutorial
 --------------------------------------------
+
+* Did the process of the course enable you to answer or define questions that you might need later for thesis?
+* Would you have preferred to have been given less choice in the use cases?
+* Was the number of tools for the course ok - should we have more or less? - if so which ones would you leave out?
 
 
 
 Recieved feedback on the tutorial
 --------------------------------------------
 
+The project generally received positive feedback. One thing that was pointed out though, was that they could
+have wished for a simpler overview of the tool, and what exactly it did. On the other hand, as they said themselves,
+they did not posses much knowledge within structural analysis, and therefore it was not straight forward to easily
+understand the tool.
 
 
 My future for Advanced use of OpenBIM
 --------------------------------------------
 
+I will very much likely continue to use OpenBIM in the future. Both for my future professsional life, but certainly
+also my bachelor's thesis as well as my master's thesis.
+
+I think that it's exciting to work on the development of tools that can help automate and improve the workflow of
+design, calculations and documentation. I'm also generally glad for open source software, and I think it's important
+to transition to open standards - especially in a governmental context.
 
 
 Wrap up
@@ -86,3 +107,7 @@ As often being the case, it's easy to understimate the actual time it takes to i
 Yet, I'm still happy with the result, and I think I have learned a lot during the process. Beside BIM-specific skills, I have
 also gained more experience with OpenCascade, Sphinx, Github actions and more. It's likely that I will continue to work on
 this tool, and hopefully I will be able to implement the missing functionality for a coherent tool.
+
+
+* conclude the journey through A1-A5
+
