@@ -108,6 +108,13 @@ Yet, I'm still happy with the result, and I think I have learned a lot during th
 also gained more experience with OpenCascade, Sphinx, Github actions and more. It's likely that I will continue to work on
 this tool, and hopefully I will be able to implement the missing functionality for a coherent tool.
 
+My work in `A1 <https://github.com/KaareH/DTU_E23_41934_Advanced-BIM/tree/main/Assignments/A1>`_ did not have much
+to do with A2-A4, though it did get to work slightly with the mesh-based geometry of ifcopenshell.
+A2 and A3 on the other hand, pretty much fusioned to one assignment. The work of A2 was clearly targeted toward my goals of A3
+and the final project. A3 was also when I improved the structure of the codebase, and got a more narrow scope for what I wanted
+to achieve.
 
-* conclude the journey through A1-A5
-
+If I were to do this project again, there are some things that I would have done differently from the beginning. During this
+project I mostly focused on the code implementation first, and then the IDM. I think it would have been beneficial to have
+created and utilized diagrams from an earlier stage. This could have helped me keep track of the scope of the project, and
+which components of the codebase I had to implement next.
