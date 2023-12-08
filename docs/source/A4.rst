@@ -12,7 +12,7 @@ That is, further development of this tool by structural engineers with software 
 Prerequisites
 ----------------------
 
-Though this is assingment 4, the working directory is the same as in assingment 3, :code:`./Assignments/A3/`.
+Though this is assingment 4, the working directory is, :code:`./some/path/to/DTU_E23_41934_Advanced-BIM/`.
 
 #. First, please refer to :doc:`installation`.
 
@@ -22,7 +22,7 @@ Though this is assingment 4, the working directory is the same as in assingment 
 Running the CLI tool
 -----------------------------
 
-Make sure you are in the working directory, :code:`./Assignments/A3/`.
+Make sure you are in the working directory, :code:`./some/path/to/DTU_E23_41934_Advanced-BIM/`.
 
 Execute the following command:
 
