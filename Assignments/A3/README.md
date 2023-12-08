@@ -12,7 +12,9 @@ __41934 - Advanced BIM, E23__ - _Technical University of Denmark_
 
 **NB. 1** _Changes_ has been made to this reporsitory post assignment due date. Refer to `commit-ab3e439` for last commit before due date.
 
-**NB. 2** _Since_ `commit-bcdfbe4`, contents of this README.md has been moved to [https://kaareh.github.io/DTU_E23_41934_Advanced-BIM/](https://kaareh.github.io/DTU_E23_41934_Advanced-BIM/) 
+**NB. 2** _Since_ `commit-bcdfbe4`, contents of this README.md has been moved to [https://kaareh.github.io/DTU_E23_41934_Advanced-BIM/](https://kaareh.github.io/DTU_E23_41934_Advanced-BIM/)
+
+**NB3. 3** Most of the source code relevant to A3 has been moved to the root of this reporsitory, `../../src/pyconbim`.
 
 
 ## Using the tool

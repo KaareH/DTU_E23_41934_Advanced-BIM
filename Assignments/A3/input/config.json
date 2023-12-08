@@ -1,7 +1,7 @@
 {
     "general_config": {
         "run_pynite": false,
-        "model_directory": "models",
+        "model_directory": "../../models",
         "output_directory": "output"
     },
     "model-configurations": [

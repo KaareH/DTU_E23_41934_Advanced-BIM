@@ -42,7 +42,7 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-        working-directory: ./Assignments/A3
+        working-directory: ./
         
     steps:
       - uses: actions/checkout@v3
@@ -68,8 +68,8 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ${{ env.CONDA_ENV }}
-          # key: ${{ runner.os }}-conda-${{ hashFiles('Assignments/A3/docs/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-          key: ${{ matrix.label }}-conda-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+          # key: ${{ runner.os }}-conda-${{ hashFiles('docs/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+          key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
         id: cache
           
       - name: Set up conda environment
@@ -88,7 +88,7 @@ jobs:
         with:
           path: ${{ env.CONDA_PKG }}
           # key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-          key: ${{ matrix.label }}-conda-pkg-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+          key: ${{ matrix.label }}-conda-pkg-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
         id: restore-cache
 
       - name: Add local channel linux-64
@@ -139,7 +139,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: Assignments/A3/docs/build/html/
+          path: docs/build/html/
 
   # Deployment job
   deploy:
