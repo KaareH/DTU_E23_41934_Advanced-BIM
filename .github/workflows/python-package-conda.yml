@@ -2,8 +2,9 @@ name: Python Package using Conda
 
 on:
   push:
+    branches: ["reorganize_to_root"]
     paths-ignore:
-      - 'Assignments/A3/docs/**'
+      - 'docs/**'
       
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -35,7 +36,7 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-        working-directory: ./Assignments/A3
+        working-directory: ./
     
     steps:
     - uses: actions/checkout@v3
@@ -70,12 +71,12 @@ jobs:
         echo "Hash:"
         echo ${{ hashFiles('environment.yml') }}
         echo "Hash:"
-        echo ${{ hashFiles('Assignments/A3/environment.yml') }}
+        echo ${{ hashFiles('environment.yml') }}
     - uses: actions/cache/restore@v3
       with:
         path: ${{ env.CONDA_ENV }}
         # key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-        key: ${{ matrix.label }}-conda-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
       id: restore-cache
 
     - name: Set up conda environment
@@ -108,7 +109,7 @@ jobs:
       continue-on-error: true
       run: |
         gh extension install actions/gh-actions-cache
-        gh actions-cache delete "${{ matrix.label }}-conda-pkg-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}" --confirm
+        gh actions-cache delete "${{ matrix.label }}-conda-pkg-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}" --confirm
       if: matrix.label == 'linux-64'
       env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -124,7 +125,7 @@ jobs:
       id: save-cache-package
       with:
         path: ${{ env.CONDA_PKG }}
-        key: ${{ matrix.label }}-conda-pkg-${{ hashFiles('Assignments/A3/environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
+        key: ${{ matrix.label }}-conda-pkg-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
         # key: ${{ steps.restore-cache.outputs.cache-primary-key }}
       
         # conda config --add channels "file:///${{ env.CONDA_ENV }}/conda-bld"
