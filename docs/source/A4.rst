@@ -12,17 +12,17 @@ That is, further development of this tool by structural engineers with software 
 Prerequisites
 ----------------------
 
-Though this is assingment 4, the working directory is, :code:`./some/path/to/DTU_E23_41934_Advanced-BIM/`.
+Through this is assingment 4, the working directory is :code:`Assignments/A3`.
 
 #. First, please refer to :doc:`installation`.
 
-#. Secondly, place :code:`LLYN - STRU.ifc` in the :code:`models` directory.
+#. Secondly, place :code:`LLYN - STRU.ifc` in the :code:`models` directory (found in the root directory of the repository, **not** in :code:`Assignments/A3`).
 
 
 Running the CLI tool
 -----------------------------
 
-Make sure you are in the working directory, :code:`./some/path/to/DTU_E23_41934_Advanced-BIM/`.
+Make sure you are in the working directory, :code:`Assignments/A3`.
 
 Execute the following command:
 
