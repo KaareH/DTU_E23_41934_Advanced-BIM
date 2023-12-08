@@ -102,7 +102,7 @@ The abstract IDM diagram for the overall BEP. This diagram covers the whole proc
 
 Click to enlarge
 
-.. figure:: ../../diagrams/IDM-abstract.svg
+.. figure:: ../../Assignments/A3/diagrams/IDM-abstract.svg
    :width: 100%
 
 Focused/implemented IDM
@@ -112,5 +112,5 @@ This IDM diagram describes the very tool that analyses IFC-models and creates st
 
 Click to enlarge
 
-.. figure:: ../../diagrams/IDM-implemented.svg
+.. figure:: ../../Assignments/A3/diagrams/IDM-implemented.svg
    :width: 100%
