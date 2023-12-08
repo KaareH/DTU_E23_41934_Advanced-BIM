@@ -12,7 +12,7 @@ Steps
 
     .. code-block:: console
         
-        $ cd Assignments/A3
+        $ cd some/path/to/DTU_E23_41934_Advanced-BIM
 3. Create the required environment by:
     
     .. code-block:: console
@@ -58,7 +58,7 @@ Build documentation
 1.
     .. code-block:: console
         
-        $ cd Assingments/A3
+        $ cd some/path/to/DTU_E23_41934_Advanced-BIM
 2.
     .. code-block:: console
 
